@@ -45,9 +45,11 @@ class View {
       vo.setView( this ) 
       console.log( vo.ref )
     })
-    this.view.forEach( vo => {
+    let u = vo => {
       vo.update()
-    })
+      Object.values(vo.children).forEach(vo => u(vo))
+    }
+    this.view.forEach( vo => u(vo) )
   }
   length () { return Object.keys( this.children ).length }
   broadcast (msg, ...args) { return this.update[msg]( this.model, ...args ) }
@@ -108,7 +110,7 @@ class ViewObject {
     voAr.forEach( vo => {
       this.children[vo.id] = vo
       this.el.appendChild( vo.el )
-      vo.parent = this.id
+      vo.parent = this
       if( this.view ) vo.view = this.view
     })
     return this
