@@ -13,7 +13,6 @@ class Model {
     this.ref = {}
   }
   register (vo) {
-    console.log('register-check', vo?.dataArgs && vo.dataArgs[1])
     if(vo?.dataArgs && vo.dataArgs[1]){
       console.log('register', vo)
       vo.dataArgs[1].forEach(str => {
@@ -24,7 +23,6 @@ class Model {
           eval(`if(!this.ref${loc}) this.ref${loc} = {}`)
         })
         eval(`this.ref${loc}[vo.id] = vo`)
-        console.log('registerRef', this.ref)
       })
     }
   }
@@ -147,7 +145,6 @@ class ViewObject {
     let str = this.dataArgs[0]+'', tokens = [...this.dataArgs[1]]
     let val = str + ''
     let model = this.view?.model
-    console.log(this.dataArgs, model)
     tokens.forEach((t, i) => {
       this.ref[t] = true
       if(model) 

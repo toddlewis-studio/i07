@@ -37,19 +37,23 @@ ui.userCard = () =>
   ui.card
     ( i0.vo`h1`.data('{0}', 'user.username')
     , i0.vo`div`.data('Age: {0}', 'user.age')
-    , i0.vo`div`.data('Badges: {0}', 'user.badges.length')
+    , i0.vo`div`.data('Test: {0}', 'user.inv.test')
+    , i0.vo`div`.data('Badges: {0}', 'user.inv.badges.length')
     , ui.btn`addBadge`
         .text`Add Badge`
     )
 
 i0.view (
-  { counter: 0, title: 'Welcome to i07', user: { username: 'test', age: 10, badges: [] } },
+  { counter: 0
+  , title: 'Welcome to i07' 
+  , user: { username: 'test', age: 10, inv: {badges: [], test: 'asdf'} } 
+  },
   [ ui.container ( ui.userCard () ) ],
   { increment: model => console.log( model.set`counter`( model.get`counter` + 1 ) ) 
   , addBadge: model => {
-    const badges = model.get`user.badges`
+    const badges = model.get`user.inv.badges`
     badges.push({title: 'new badge'})
-    model.set`user.badges`(badges)
+    model.set`user.inv.badges`(badges)
   }
   }
 ).appendTo(document.body)
