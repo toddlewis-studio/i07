@@ -10,7 +10,7 @@ class Model {
     this.data = Object.assign({}, data)
     this.ref = ref
   }
-  get (p,...pd) {
+  get (p,...pd) { 
     let o = this.data
     if(p === undefined) return o
     let path = p[0].concat(...pd)
@@ -53,7 +53,6 @@ class View {
     Object.values(this.objects).forEach(vo => {
       Object.keys(vo.ref).forEach(ref => {
         if(path.includes(ref)){
-	        console.log('ref update', path, ref)
           let i = ref.indexOf(path)
 	        let res = path[i + ref.length]
           if(res === undefined || res === '.') vo.update()
