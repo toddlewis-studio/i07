@@ -53,7 +53,14 @@ class View {
   }
   length () { return Object.keys( this.children ).length }
   broadcast (msg, ...args) { return this.update[msg]( this.model, ...args ) }
-  appendTo(el) { this.view.forEach(vo => el.appendChild(vo.el)) }
+  appendTo (el) { this.view.forEach(vo => el.appendChild(vo.el)) }
+  ref (path) {
+    Object.values(this.objects).forEach(vo => {
+      Object.values(vo.ref).forEach(ref => {
+        
+      })
+    }) 
+  }
 }
 
 class ViewObject {
