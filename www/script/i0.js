@@ -5,10 +5,62 @@ i0.guid = (r, v) =>
   (r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8))
   .toString(16))
 
+i0.str = (...params) => params.pop().concat(...params)
+
 class Model {
-  constructor (data, ref) {
+  constructor (data) {
     this.data = Object.assign({}, data)
-    this.ref = ref
+    this.ref = {}
+  }
+  register (vo) {
+    console.log('register-check', vo?.dataArgs && vo.dataArgs[1])
+    if(vo?.dataArgs && vo.dataArgs[1]){
+      console.log('register', vo)
+      vo.dataArgs[1].forEach(str => {
+        const pathAr = str.split('.')
+        let loc = ''
+        pathAr.forEach(path => {
+          loc += `['${path}']`
+          eval(`if(!this.ref${loc}) this.ref${loc} = {}`)
+        })
+        eval(`this.ref${loc}[vo.id] = vo`)
+        console.log('registerRef', this.ref)
+      })
+    }
+  }
+  unregister (vo) {  
+    if(vo?.dataArgs?.tokens)
+      vo.dataArgs.tokens.forEach(str => {
+        const pathAr = str.split('.')
+        let path = ''
+        pathAr.forEach(p => path += `[${p}]`)
+        eval(`delete this.ref${path}`)
+        while(pathAr.length){
+          pathAr.pop()
+          path = ''
+          pathAr.forEach(p => path += `[${p}]`)
+          eval(`
+            if(Object.keys(this.ref${path}).length === 0)
+              delete this.ref${path}
+            else
+              pathAr = []
+          `)
+        }
+      })
+  }
+  update (path) {
+    const pathAr = path.split('.')
+    let loc = this.ref
+    pathAr.find(p => {
+      if(loc[p]) loc = loc[p]
+      else return loc = {error: 'path not found', pathAr, p, loc, i0error: true}
+    })
+    if(loc && loc.error && loc.i0error) return console.warn(loc)
+    const u = path => Object.values(path).forEach(vo => {
+      if(vo instanceof ViewObject) vo.update()
+      else u(vo)
+    })
+    u(loc)
   }
   get (p,...pd) { 
     let o = this.data
@@ -22,7 +74,7 @@ class Model {
     return value => {
       try { 
        eval(`this.data${path ? `.${path}` : ''} = value`)
-       this.ref(path)
+       this.update(path)
        return eval(`this.data${path ? `.${path}` : ''}`) 
       }
       catch (e) { console.error(e) }
@@ -32,7 +84,7 @@ class Model {
 
 class View {
   constructor (model, view, update) {
-    this.model = new Model(model, p => this.ref(p))
+    this.model = new Model(model)
     this.view = view
     this.update = update
     this.objects = {}
@@ -41,6 +93,7 @@ class View {
     let u = vo => {
       this.objects[vo.id] = vo
       vo.setView( this )
+      this.model.register(vo)
       vo.update()
       Object.values(vo.children).forEach(vo => u(vo))
     }
@@ -49,17 +102,6 @@ class View {
   length () { return Object.keys( this.children ).length }
   broadcast (msg, ...args) { return this.update[msg]( this.model, ...args ) }
   appendTo (el) { this.view.forEach(vo => el.appendChild(vo.el)) }
-  ref (path) {
-    Object.values(this.objects).forEach(vo => {
-      Object.keys(vo.ref).forEach(ref => {
-        if(path.includes(ref)){
-          let i = ref.indexOf(path)
-	        let res = path[i + ref.length]
-          if(res === undefined || res === '.') vo.update()
-	      }
-      })
-    }) 
-  }
 }
 
 class ViewObject {
@@ -139,5 +181,11 @@ i0.vo = (t, ...td) => {
   const vo = new ViewObject(tag)
   return vo
 }
+
+i0.model = data => new Model(data)
+
+i0.Model = Model
+i0.View = View
+i0.ViewObject = ViewObject
 
 export default i0
