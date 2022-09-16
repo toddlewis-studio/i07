@@ -35,14 +35,18 @@ ui.btn = (...msg) =>
 
 ui.userCard = () =>
   ui.card
-    ( i0.vo`h1`.data('{0}', 'user.username')
+    ( i0.vo`${'h1'}`.data('{0}', 'user.username')
     , i0.vo`div`.data('Age: {0}', 'user.age')
     , i0.vo`div`.data('Test: {0}', 'user.inv.test')
+    , i0.vo`div`.data('Badges: {0}', 'user.inv.badges.length')
+    , ui.btn`addBadge`.text`Add Badge`
     , i0.vo`div`
-        .list`user.inv.badges::badge`
-        .data('Badges: {0}', 'badge.title')
-    , ui.btn`addBadge`
-        .text`Add Badge`
+        .list`user.inv.badges::@badge`
+        .child
+          ( i0.vo`span`
+              .style`badge`
+              // .data('{0}', '@badge.title')
+          )
     )
 
 i0.view (
@@ -55,10 +59,19 @@ i0.view (
   , addBadge: model => {
     const badges = model.get`user.inv.badges`
     badges.push({title: 'new badge'})
-    model.set`user.inv.badges`(badges)
+    console.log(badges)
+    model.set`user.inv.badges`( badges )
   }
   }
 ).appendTo(document.body)
+
+let div = i0.vo`div`
+            .child
+              ( i0.vo`span`.text`Works!`.on`click::test`
+              )
+let clone = div.clone``
+
+console.log('clone', clone)
 
 // const getUser = async (uid) => {
 //   const user = await i0.post`./api/user`({uid})

@@ -1,20 +1,31 @@
 const i0 = {} //guid, view, vo
 
+// utils :: guid, str
+
 i0.guid = (r, v) =>
 'i0-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => 
   (r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8))
   .toString(16))
 
-i0.str = (...params) => params.pop().concat(...params)
+i0.str = (...params) => {
+  let str = ''
+  params[0].forEach((s, i) => {
+    if(i > 0) str += params[i]
+    str += s
+  })
+  return str
+}
+
+// main
 
 class Model {
   constructor (data) {
     this.data = Object.assign({}, data)
+    console.log('model', this.data)
     this.ref = {}
   }
   register (vo) {
     if(vo?.dataArgs && vo.dataArgs[1]){
-      console.log('register', vo)
       vo.dataArgs[1].forEach(str => {
         const pathAr = str.split('.')
         let loc = ''
@@ -53,7 +64,7 @@ class Model {
       if(loc[p]) loc = loc[p]
       else return loc = {error: 'path not found', pathAr, p, loc, i0error: true}
     })
-    if(loc && loc.error && loc.i0error) return console.warn(loc)
+    if(loc && loc.error && loc.i0error) return loc
     const u = path => Object.values(path).forEach(vo => {
       if(vo instanceof ViewObject) vo.update()
       else u(vo)
@@ -62,18 +73,18 @@ class Model {
   }
   get (...path) { 
     let o = this.data
-    if(p === undefined) return o
-    let path = i0.str(...path)
-    try { return eval(`this.data${path ? `.${path}` : ''}`) }
+    let p = i0.str(...path)
+    if(p === undefined || p === '') return o
+    try { return eval(`this.data${p ? `.${p}` : ''}`) }
     catch (e) { console.error(e) }
   }
   set (...path) {
-    let path = i0.str(...path)
+    let p = i0.str(...path)
     return value => {
       try { 
-       eval(`this.data${path ? `.${path}` : ''} = value`)
-       this.update(path)
-       return eval(`this.data${path ? `.${path}` : ''}`) 
+       eval(`this.data${p ? `.${p}` : ''} = value`)
+       this.update(p)
+       return eval(`this.data${p ? `.${p}` : ''}`) 
       }
       catch (e) { console.error(e) }
     }
@@ -102,12 +113,38 @@ class View {
   appendTo (el) { this.view.forEach(vo => el.appendChild(vo.el)) }
 }
 
+class ViewObjectType {apply(vo){}}
+class ViewObjectTypeText extends ViewObjectType {
+  constructor(text){super(); this.text = text} 
+  apply(vo){
+    vo.el.innerText = this.text
+    vo.type = new ViewObjectTypeText(this.text)
+  }
+}
+class ViewObjectTypeHtml extends ViewObjectType {
+  constructor(text){super(); this.text = text} 
+  apply(vo){
+    vo.el.innerHTML = this.text
+    vo.type = new ViewObjectTypeHtml(this.text)
+  }
+}
+class ViewObjectTypeData extends ViewObjectType {
+  constructor(dataArgs){super(); this.dataArgs = dataArgs} 
+  apply(vo){
+    vo.dataArgs = this.dataArgs
+    vo.type = new ViewObjectTypeData(this.text)
+  }
+}
+
 class ViewObject {
   constructor ( tag ){
     this.id = i0.guid()
     this.el = document.createElement( tag )
     this.children = {}
     this.ref = {}
+    this.alias = {}
+    this.events = []
+    this.type
     this.parent
     this.view
     this.dataArgs
@@ -124,33 +161,58 @@ class ViewObject {
     return this
   }
   on (...eventString) {
+    console.log('eventstring', eventString)
+    this.events.push(eventString)
     let str = i0.str(...eventString)
     let args = str.split('::')
-    this.el.addEventListener(args[0], () => {
+    this.el.addEventListener(args[0], e => {
       if( this.view )
-        this.view.broadcast(args[1])
-      else console.error( 'view not found' )
+        this.view.broadcast(args[1], e)
+      else console.warn( 'i0 warning: event called but view not found.' )
     })
     return this
   }
-  text (...innerText) { this.el.innerText = i0.str(...innerText) ; return this }
-  html (...innerHtml) { this.el.innerHTML = i0.str(...innerHtml) ; return this }
+  text (...innerText) { this.el.innerText = i0.str(...innerText) ; this.type = new ViewObjectTypeText(i0.str(...innerText)) ; return this }
+  html (...innerHtml) { this.el.innerHTML = i0.str(...innerHtml) ; this.type = new ViewObjectTypeHtml(i0.str(...innerHtml)) ; return this }
   data (str, ...tokens) {
     this.dataArgs = [str, tokens]
+    this.type = new ViewObjectTypeData(this.dataArgs) 
     return this
   }
-  update () {
-    console.log('update called')
-    if(!this.dataArgs) return this
-    let str = this.dataArgs[0]+'', tokens = [...this.dataArgs[1]]
-    let val = str + ''
-    let model = this.view?.model
-    tokens.forEach((t, i) => {
-      this.ref[t] = true
-      if(model) 
-      	val = val.replaceAll(`{${i}}`, model.get`${t}`)
+  clone (view) {
+    let vo = new ViewObject(this.el.tagName)
+    if(view)
+    if(this.type) this.type.apply(vo)
+    this.events.forEach(e => vo.on(...e))
+    Object.values(this.children).forEach(child => {
+      let c = child.clone()
+      vo.children[c.id] = c
+      vo.el.appendChild(c.el)
+      c.parent = vo
+      if(child.view) c.view = child.view
     })
-    this.el.innerText = val
+    return vo
+  }
+  update () {
+    if(this.listArgs){
+      if(this.view?.model){
+        console.log('We found a list bois', ...this.listArgs)
+        const ar = this.view.model.get`${this.listArgs[0]}`
+        console.log('ar', ar)
+        
+      }
+    }
+    if(this.dataArgs) {
+      let str = this.dataArgs[0]+'', tokens = [...this.dataArgs[1]]
+      let val = str + ''
+      let model = this.view?.model
+      tokens.forEach((t, i) => {
+        this.ref[t] = true
+        if(model) 
+          val = val.replaceAll(`{${i}}`, model.get`${t}`)
+      })
+      this.el.innerText = val
+    }
     return this
   }
   setView (view) {
@@ -166,7 +228,15 @@ class ViewObject {
     })
     return this
   }
+  list (...listString) {
+    const list = i0.str(...listString)
+    const args = list.split('::')
+    this.listArgs = args
+    return this
+  }
 }
+
+// exports :: view, vo, type
 
 i0.view = (model, view, update) => {
   const v = new View(model, view, update)
@@ -179,10 +249,14 @@ i0.vo = (...tagName) => {
   return vo
 }
 
-i0.model = data => new Model(data)
-
-i0.Model = Model
-i0.View = View
-i0.ViewObject = ViewObject
+i0.type = 
+  { View
+  , ViewObject
+  , Model
+  , ViewObjectType
+  , ViewObjectTypeText
+  , ViewObjectTypeHtml
+  , ViewObjectTypeData
+  }
 
 export default i0
