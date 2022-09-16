@@ -113,26 +113,29 @@ class View {
   appendTo (el) { this.view.forEach(vo => el.appendChild(vo.el)) }
 }
 
-class ViewObjectType {apply(vo){}}
+class ViewObjectType {
+  constructor( value ) { this.value = value } 
+  apply( vo, type ) { vo.type = new type(this.value) }
+}
 class ViewObjectTypeText extends ViewObjectType {
-  constructor(text){super(); this.text = text} 
+  constructor(text){ super(text) } 
   apply(vo){
-    vo.el.innerText = this.text
-    vo.type = new ViewObjectTypeText(this.text)
+    super.apply(vo, ViewObjectTypeText)
+    vo.el.innerText = this.value
   }
 }
 class ViewObjectTypeHtml extends ViewObjectType {
-  constructor(text){super(); this.text = text} 
+  constructor(html){super(html)} 
   apply(vo){
-    vo.el.innerHTML = this.text
-    vo.type = new ViewObjectTypeHtml(this.text)
+    super.apply(vo, ViewObjectTypeHtml)
+    vo.el.innerHTML = this.value
   }
 }
 class ViewObjectTypeData extends ViewObjectType {
-  constructor(dataArgs){super(); this.dataArgs = dataArgs} 
+  constructor(dataArgs){super(dataArgs)} 
   apply(vo){
-    vo.dataArgs = this.dataArgs
-    vo.type = new ViewObjectTypeData(this.text)
+    super.apply(vo, ViewObjectTypeData)
+    vo.dataArgs = this.value
   }
 }
 
@@ -181,9 +184,15 @@ class ViewObject {
   }
   clone (view) {
     let vo = new ViewObject(this.el.tagName)
-    if(view)
+    //view
+    if(view) vo.view = view
+    //type
     if(this.type) this.type.apply(vo)
+    //events
     this.events.forEach(e => vo.on(...e))
+    //attributes
+    Array.from(this.el.attributes).forEach( attr => vo.el.setAttribute(attr.name, attr.value) )
+    //children
     Object.values(this.children).forEach(child => {
       let c = child.clone()
       vo.children[c.id] = c
