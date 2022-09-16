@@ -28,17 +28,19 @@ ui.counterCard = () =>
     , ui.counter ()
     )
 
-ui.btn = (...str) =>
+ui.btn = (...msg) =>
   i0.vo`button`
     .style`btn btn-primary`
-    .on`click::${i0.str(...str)}`
+    .on`click::${i0.str(...msg)}`
 
 ui.userCard = () =>
   ui.card
     ( i0.vo`h1`.data('{0}', 'user.username')
     , i0.vo`div`.data('Age: {0}', 'user.age')
     , i0.vo`div`.data('Test: {0}', 'user.inv.test')
-    , i0.vo`div`.data('Badges: {0}', 'user.inv.badges.length')
+    , i0.vo`div`
+        .list`user.inv.badges::badge`
+        .data('Badges: {0}', 'badge.title')
     , ui.btn`addBadge`
         .text`Add Badge`
     )

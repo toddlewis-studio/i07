@@ -60,15 +60,15 @@ class Model {
     })
     u(loc)
   }
-  get (p,...pd) { 
+  get (...path) { 
     let o = this.data
     if(p === undefined) return o
-    let path = p[0].concat(...pd)
+    let path = i0.str(...path)
     try { return eval(`this.data${path ? `.${path}` : ''}`) }
     catch (e) { console.error(e) }
   }
-  set (p,...pd) {
-    let path = p[0].concat(...pd)
+  set (...path) {
+    let path = i0.str(...path)
     return value => {
       try { 
        eval(`this.data${path ? `.${path}` : ''} = value`)
@@ -112,19 +112,19 @@ class ViewObject {
     this.view
     this.dataArgs
   }
-  style (d,...dd) {
-    let str = d[0].concat( ...dd )
+  style (...classList) {
+    let str = i0.str(...classList)
     this.el.classList.add( ...str.split(' ') )
     return this
   }
-  attr (d,...dd){ 
-    let str = d[0].concat( ...dd )
+  attr (...attrString){ 
+    let str = i0.str(...attrString)
     let val = [str.substring(0, str.indexOf('=')), str.substring(str.indexOf('=') + 1)]
     this.el.setAttribute(...val)
     return this
   }
-  on (d,...dd) {
-    let str = d[0].concat( ...dd )
+  on (...eventString) {
+    let str = i0.str(...eventString)
     let args = str.split('::')
     this.el.addEventListener(args[0], () => {
       if( this.view )
@@ -133,8 +133,8 @@ class ViewObject {
     })
     return this
   }
-  text (v,...vd) { this.el.innerText = v[0].concat( ...vd ) ; return this }
-  html (v,...vd) { this.el.innerHTML = v[0].concat( ...vd ) ; return this }
+  text (...innerText) { this.el.innerText = i0.str(...innerText) ; return this }
+  html (...innerHtml) { this.el.innerHTML = i0.str(...innerHtml) ; return this }
   data (str, ...tokens) {
     this.dataArgs = [str, tokens]
     return this
@@ -173,8 +173,8 @@ i0.view = (model, view, update) => {
   return v
 }
 
-i0.vo = (t, ...td) => {
-  const tag = t[0].concat(...td)
+i0.vo = (...tagName) => {
+  const tag = i0.str(...tagName)
   const vo = new ViewObject(tag)
   return vo
 }
