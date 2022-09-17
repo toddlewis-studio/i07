@@ -203,9 +203,9 @@ class ViewObject {
     this.events.push(eventString)
     let str = i0.str(...eventString)
     let args = str.split('::')
-    this.el.addEventListener(args[0], e => {
+    this.el.addEventListener(args.shift(), e => {
       if( this.view )
-        this.view.broadcast(args[1], e)
+        this.view.broadcast(args.shift(), e, ...args)
       else console.warn( 'i0 warning: event called but view not found.' )
     })
     return this
@@ -259,6 +259,7 @@ class ViewObject {
           else {
             this.cloneList[i] = this.cloneVO.clone()
             this.cloneList[i].alias(this.listArgs[1], `${this.listArgs[0]}.${i}`)
+            if(this.listArgs[2]) this.cloneList[i].alias(this.listArgs[2], `${i}`)
             edited = true
           }
         })
@@ -284,6 +285,7 @@ class ViewObject {
         this.ref[str] = true
         if(model) 
           val = val.replaceAll(`{${i}}`, model.get`${str}`)
+        val = val.replaceAll(`{@${i}}`, str)
       })
       this.el.innerText = val
     }

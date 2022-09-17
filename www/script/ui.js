@@ -36,8 +36,8 @@ ui.ul = () =>
   i0.vo`ul`
     .child
       ( i0.vo`li`
-          .list`list::@listItem`
-          .data('List Item: {0}', '@listItem')
+          .list`list::@listItem::@listIndex`
+          .data('{@1}. List Item: {0}', '@listItem', '@listIndex')
       )
 
 ui.userCard = () =>
