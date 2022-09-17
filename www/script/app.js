@@ -1,22 +1,18 @@
 import i0 from './i0/i0.js'
 import ui from './ui.js'
 
-i0.view (
-  { counter: 0
-  , title: 'Welcome to i07' 
-  , user: { username: 'test', inv: {badges: [], test: 'asdf'} }
-  , list: ['a', 'b', 'c'] 
-  },
-  [ ui.container ( ui.userCard () ) ],
-  { increment: model => console.log( model.set`counter`( model.get`counter` + 1 ) ) 
-  , addBadge: model => {
-      const badges = model.get`user.inv.badges`
-      const r = Math.floor(Math.random() * 1000)
-      badges.push({title: 'Badge #' + r})
-      model.set`user.inv.badges`( badges )
-    }
-  }
-).appendTo(document.body)
+let view, app = i0.vo`div`.attr`id=app`
+document.body.appendChild(app.el)
+const onRoute = () => {
+  view = ui._route[location.hash]
+  if( view ) view = view()
+  document.body.removeChild( app.el )
+  app = i0.vo`div`.attr`id=app`
+  view.appendTo( app.el )
+  document.body.appendChild( app.el )
+}
+addEventListener('hashchange', () => onRoute())
+onRoute()
 
 // const getUser = async (uid) => {
 //   const user = await i0.post`./api/user`({uid})
