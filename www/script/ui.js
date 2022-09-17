@@ -32,18 +32,24 @@ ui.btn = (...msg) =>
     .style`btn btn-primary`
     .on`click::${i0.str(...msg)}`
 
+ui.ul = () => 
+  i0.vo`ul`
+    .child
+      ( i0.vo`li`
+          .list`list::@listItem`
+          .data('List Item: {0}', '@listItem')
+      )
+
 ui.userCard = () =>
   ui.card
     ( i0.vo`${'h1'}`.data('{0}', 'user.username')
-    , i0.vo`div`.data('Age: {0}', 'user.age')
-    , i0.vo`div`.data('Test: {0}', 'user.inv.test')
+    , ui.ul()
     , i0.vo`div`.data('Badges: {0}', 'user.inv.badges.length')
     , ui.btn`addBadge`.text`Add Badge`
     , i0.vo`div`
         .list`user.inv.badges::@badge`
         .child
           ( i0.vo`span`
-              .style`badge`
               .data('{0}', '@badge.title')
           )
     )

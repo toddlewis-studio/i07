@@ -4,19 +4,17 @@ import ui from './ui.js'
 i0.view (
   { counter: 0
   , title: 'Welcome to i07' 
-  , user: { username: 'test', age: 10, inv: {badges: [], test: 'asdf'}, ar: [{title: 'test'}] } 
+  , user: { username: 'test', inv: {badges: [], test: 'asdf'} }
+  , list: ['a', 'b', 'c'] 
   },
-  [ ui.container ( ui.userCard () )
-  , i0.vo`div`
-      .data('{0}', 'user.ar.0.title')
-  ],
+  [ ui.container ( ui.userCard () ) ],
   { increment: model => console.log( model.set`counter`( model.get`counter` + 1 ) ) 
   , addBadge: model => {
-    const badges = model.get`user.inv.badges`
-    badges.push({title: 'new badge'})
-    console.log(badges)
-    model.set`user.inv.badges`( badges )
-  }
+      const badges = model.get`user.inv.badges`
+      const r = Math.floor(Math.random() * 1000)
+      badges.push({title: 'Badge #' + r})
+      model.set`user.inv.badges`( badges )
+    }
   }
 ).appendTo(document.body)
 
@@ -33,41 +31,3 @@ i0.view (
 //   '#Home': () => view,
 //   '#User': () => view 
 // })
-
-// view = i0.view (
-//   { todos: []
-//   , todoVal: ''
-//   },
-//   [ container
-//       ( card
-//           ( i0.vo`h1`.text`Todos`
-//           , card
-//             ( i0.vo`input`
-//                 .attr`placeholder=Enter your todo...`
-//                 .attr`title=Enter your todo...`
-//                 .bind`todoVal`
-//             , i0.vo`button`
-//                 .text`Create`
-//                 .on`click::createTodo`
-//             )
-//           , card
-//             ( i0.vo`div`
-//                 .list`todos::t`
-//                 .style`card`
-//                 .child
-//                   ( i0.vo`div`
-//                       .style`card-body`
-//                       .data('{0}', 't')
-//                   )
-//             )
-//           )
-//       )
-//   ],
-//   { createTodo: m => {
-//       m.todos.push({val: m.todoVal})
-//       m.todoVal = ''
-//     }
-//   }
-// )
-
-// view.appendTo( document.body )
