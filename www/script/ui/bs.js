@@ -16,10 +16,6 @@ ui.card = (...vo) =>
            .child (...vo)
        )
 
-ui.section = (...vo) =>
-  ui.card(...vo)
-    .style`rounded-0`
-
 ui.btn = (...msg) =>
   i0.vo`button`
     .style`btn btn-primary`

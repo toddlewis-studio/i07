@@ -144,6 +144,16 @@ class View {
   length () { return Object.keys( this.children ).length }
   broadcast (msg, ...args) { return this.update[msg]( this.model, ...args ) }
   appendTo (el) { this.view.forEach(vo => el.appendChild(vo.el)) }
+  get(...getStr){
+    if(!this.model) return undefined
+    let str = i0.str(...getStr)
+    return this.view.model.get`${str}`
+  }
+  set(...setStr){
+    if(!this.view || !this.view.model) return undefined
+    let str = i0.str(...setStr)
+    return this.view.model.set`${str}`
+  }
 }
 
 class ViewObjectType {
@@ -215,6 +225,10 @@ class ViewObject {
   data (str, ...tokens) {
     this.dataArgs = [str, tokens]
     this.type = new ViewObjectTypeData(this.dataArgs) 
+    return this
+  }
+  edit (fn) {
+    fn(this)
     return this
   }
   clone (view) {
@@ -300,6 +314,18 @@ class ViewObject {
     if(this.dataArgs) 
       this.aliasObj[token] = val
     Object.values(this.children).forEach(child => child.alias(token, val))
+  }
+  get(...getStr){
+    if(!this.view || !this.view.model) return undefined
+    let str = this.aliasString( i0.str(...getStr) )
+    let res = this.view.model.get`${str}`
+    console.log('res', res)
+    return res
+  }
+  set(...setStr){
+    if(!this.view || !this.view.model) return undefined
+    let str = this.aliasString( i0.str(...setStr) )
+    return this.view.model.set`${str}`
   }
   add(vo){
     if(this.view) {
