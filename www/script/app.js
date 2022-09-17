@@ -4,9 +4,12 @@ import ui from './ui.js'
 i0.view (
   { counter: 0
   , title: 'Welcome to i07' 
-  , user: { username: 'test', age: 10, inv: {badges: [], test: 'asdf'} } 
+  , user: { username: 'test', age: 10, inv: {badges: [], test: 'asdf'}, ar: [{title: 'test'}] } 
   },
-  [ ui.container ( ui.userCard () ) ],
+  [ ui.container ( ui.userCard () )
+  , i0.vo`div`
+      .data('{0}', 'user.ar.0.title')
+  ],
   { increment: model => console.log( model.set`counter`( model.get`counter` + 1 ) ) 
   , addBadge: model => {
     const badges = model.get`user.inv.badges`
@@ -16,15 +19,6 @@ i0.view (
   }
   }
 ).appendTo(document.body)
-
-let div = i0.vo`div`
-            .attr`title=title attr`
-            .child
-              ( i0.vo`span`.text`Works!`.on`click::test`
-              )
-let clone = div.clone``
-
-console.log('clone', clone)
 
 // const getUser = async (uid) => {
 //   const user = await i0.post`./api/user`({uid})

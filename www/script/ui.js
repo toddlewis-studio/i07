@@ -44,7 +44,7 @@ ui.userCard = () =>
         .child
           ( i0.vo`span`
               .style`badge`
-              // .data('{0}', '@badge.title')
+              .data('{0}', '@badge.title')
           )
     )
 

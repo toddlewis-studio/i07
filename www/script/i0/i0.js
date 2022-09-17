@@ -25,21 +25,50 @@ class Model {
     this.ref = {}
   }
   register (vo) {
-    if(vo?.dataArgs && vo.dataArgs[1]){
+    if(vo?.listArgs){
+      const pathAr = vo.listArgs[0].split('.')
+      let loc = ''
+      pathAr.forEach(path => {
+        loc += `['${path}']`
+        eval(`if(!this.ref${loc}) this.ref${loc} = {}`)
+      })
+      eval(`this.ref${loc}[vo.id] = vo`)
+    }
+    else if(vo?.dataArgs)
       vo.dataArgs[1].forEach(str => {
+        if(str.substring(0,1) === '@') return null
         const pathAr = str.split('.')
         let loc = ''
+        console.log('register', str)
         pathAr.forEach(path => {
           loc += `['${path}']`
           eval(`if(!this.ref${loc}) this.ref${loc} = {}`)
         })
         eval(`this.ref${loc}[vo.id] = vo`)
       })
-    }
   }
   unregister (vo) {  
-    if(vo?.dataArgs?.tokens)
-      vo.dataArgs.tokens.forEach(str => {
+    if(vo?.listArgs){
+      const pathAr = vo.listArgs[0].split('.')
+      let path = ''
+      pathAr.forEach(p => path += `[${p}]`)
+      eval(`delete this.ref${path}`)
+      console.log('unregister', `this.ref${path}`)
+      while(pathAr.length){
+        pathAr.pop()
+        path = ''
+        pathAr.forEach(p => path += `[${p}]`)
+        eval(`
+          if(Object.keys(this.ref${path}).length === 0)
+            delete this.ref${path}
+          else
+            pathAr = []
+        `)
+      }
+    }
+    else if(vo?.dataArgs)
+      vo.dataArgs[1].forEach(str => {
+        if(str.substring(0,1) === '@') return null
         const pathAr = str.split('.')
         let path = ''
         pathAr.forEach(p => path += `[${p}]`)
@@ -75,16 +104,23 @@ class Model {
     let o = this.data
     let p = i0.str(...path)
     if(p === undefined || p === '') return o
-    try { return eval(`this.data${p ? `.${p}` : ''}`) }
+    if(p.substring(0, 1) === '@') return undefined
+    let pathString = ''
+    p.split('.').forEach(s => pathString += `['${s}']`)
+    console.log('---model.get', pathString)
+    try { return eval(`this.data${p ? `${pathString}` : ''}`) }
     catch (e) { console.error(e) }
   }
   set (...path) {
     let p = i0.str(...path)
     return value => {
+      if(p.substring(0, 1) === '@') return undefined
+      let pathString = ''
+      p.split('.').forEach(s => pathString += `['${s}']`)
       try { 
-       eval(`this.data${p ? `.${p}` : ''} = value`)
+       eval(`this.data${p ? `${pathString}` : ''} = value`)
        this.update(p)
-       return eval(`this.data${p ? `.${p}` : ''}`) 
+       return eval(`this.data${p ? `${pathString}` : ''}`) 
       }
       catch (e) { console.error(e) }
     }
@@ -145,12 +181,12 @@ class ViewObject {
     this.el = document.createElement( tag )
     this.children = {}
     this.ref = {}
-    this.alias = {}
     this.events = []
     this.type
     this.parent
     this.view
     this.dataArgs
+    this.listArgs
   }
   style (...classList) {
     let str = i0.str(...classList)
@@ -186,7 +222,7 @@ class ViewObject {
     let vo = new ViewObject(this.el.tagName)
     //view
     if(view) vo.view = view
-    //type
+    //type - text, innerHtml, data
     if(this.type) this.type.apply(vo)
     //events
     this.events.forEach(e => vo.on(...e))
@@ -204,11 +240,38 @@ class ViewObject {
   }
   update () {
     if(this.listArgs){
-      if(this.view?.model){
-        console.log('We found a list bois', ...this.listArgs)
+      if(this.view?.model && this.el.nodeName !== '#comment'){
+        const comment = document.createComment('i0')
+        const clone = this.clone()
+        if(this.el.parentNode){
+          this.el.parentNode.insertBefore(comment, this.el)
+          this.el.parentNode.removeChild(this.el)
+          this.el = comment
+          this.clone = clone
+          this.cloneList = []
+        }
+        this.ref[this.listArgs[0]] = true
+      }
+      if(this.el.nodeName === '#comment'){
         const ar = this.view.model.get`${this.listArgs[0]}`
-        console.log('ar', ar)
-        
+        let edited = false
+        ar.forEach((item, i) => {
+          if(this.cloneList[i]) this.cloneList[i].update()
+          else {
+            this.cloneList[i] = this.clone.clone()
+            this.cloneList[i].alias(this.listArgs[1], `${this.listArgs[0]}.${i}`)
+            this.cloneList[i].update()
+            edited = true
+          }
+        })
+        if(edited){
+          console.log('cloneList', this.cloneList)
+          this.cloneList.forEach((c, i) => {
+            c.rm()
+            this.parent.add(c)
+            this.el.parentNode.insertBefore(c.el, this.el)
+          })
+        }
       }
     }
     if(this.dataArgs) {
@@ -224,8 +287,35 @@ class ViewObject {
     }
     return this
   }
+  alias(token, val){
+    if(this.dataArgs) {
+      this.dataArgs[1] = this.dataArgs[1].map((str, i) => {
+        if(str.substring(0,1) === '@')
+          return this.dataArgs[1][i].replaceAll(token, val)
+        return this.dataArgs[1][i]
+      })
+    }
+    console.log('ALIAS', this, this.dataArgs)
+    Object.values(this.children).forEach(child => child.alias(token, val))
+  }
+  add(vo){
+    if(this.view) {
+      vo.parent = this
+      if(this.view) this.setView(this.view)
+    }
+  }
+  rm(){
+    if(this.view) {
+      this.view.model.unregister(this)
+      this.view = undefined
+    }
+    if(this.parent) this.parent = undefined
+    if(this.el.parentNode) this.el.parentNode.removeChild(this.el)
+  }
   setView (view) {
     this.view = view
+    view.model.register(this)
+    this.update()
     Object.values(this.children).forEach( child => child.setView( view ) )
   }
   child (...voAr) { 
