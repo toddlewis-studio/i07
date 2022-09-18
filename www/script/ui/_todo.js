@@ -19,10 +19,11 @@ export default () => {
       .child
         ( i0.vo`a`
             .list`nav::@link`
-            // .data`@link`((vo, link) => {
-            //   vo.el.href = link.hash 
-            //   vo.el.innerText = link.text
-            // })
+            .data`@link`((vo, link) => {
+              console.log('data', link)
+              vo.el.href = link.hash 
+              vo.el.innerText = link.text
+            })
         )
         
   const model = 

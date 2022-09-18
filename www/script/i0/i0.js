@@ -34,8 +34,9 @@ class Model {
       })
       eval(`this.ref${loc}[vo.id] = vo`)
     }
-    else if(vo?.dataArgs)
-      vo.dataArgs[1].forEach(str => {
+    else if(vo?.dataArgs) {
+      console.log('register', vo.dataArgs)
+      vo.dataArgs.forEach(obj => obj.args.forEach(str => {
         if(str.substring(0,1) === '@') return null
         const pathAr = str.split('.')
         let loc = ''
@@ -45,7 +46,8 @@ class Model {
           eval(`if(!this.ref${loc}) this.ref${loc} = {}`)
         })
         eval(`this.ref${loc}[vo.id] = vo`)
-      })
+      }))
+    }
   }
   unregister (vo) {  
     if(vo?.listArgs){
@@ -67,7 +69,7 @@ class Model {
       }
     }
     else if(vo?.dataArgs)
-      vo.dataArgs[1].forEach(str => {
+      vo.dataArgs.forEach(obj => obj.args.forEach(str => {
         if(str.substring(0,1) === '@') return null
         const pathAr = str.split('.')
         let path = ''
@@ -84,7 +86,7 @@ class Model {
               pathAr = []
           `)
         }
-      })
+      }))
   }
   update (path) {
     const pathAr = path.split('.')
@@ -176,7 +178,7 @@ class ViewObjectTypeHtml extends ViewObjectType {
 }
 class ViewObjectTypeData extends ViewObjectType {
   constructor(dataArgs){
-    super( JSON.parse(JSON.stringify(dataArgs)) )
+    super( [...dataArgs] ) 
   } 
   apply(vo){
     super.apply(vo, ViewObjectTypeData)
@@ -222,10 +224,15 @@ class ViewObject {
   }
   text (...innerText) { this.el.innerText = i0.str(...innerText) ; this.type = new ViewObjectTypeText(i0.str(...innerText)) ; return this }
   html (...innerHtml) { this.el.innerHTML = i0.str(...innerHtml) ; this.type = new ViewObjectTypeHtml(i0.str(...innerHtml)) ; return this }
-  data (str, ...tokens) {
-    this.dataArgs = [str, tokens]
-    this.type = new ViewObjectTypeData(this.dataArgs) 
-    return this
+  data (...dataPath) {
+    let str = i0.str(...dataPath)
+    let args = str.split('::')
+    if(!this.dataArgs) this.dataArgs = []
+    return fn => {
+      this.dataArgs.push({args, fn})
+      this.type = new ViewObjectTypeData( this.dataArgs )
+      return this
+    }
   }
   edit (fn) {
     fn(this)
@@ -289,19 +296,11 @@ class ViewObject {
         }
       }
     }
-    if(this.dataArgs) {
-      let str = this.dataArgs[0]+'', tokens = [...this.dataArgs[1]]
-      let val = str + ''
-      let model = this.view?.model
-      tokens.forEach((t, i) => {
-        let str = t + ''
-        if(str.substring(0,1) === '@') str = this.aliasString(str)
-        this.ref[str] = true
-        if(model) 
-          val = val.replaceAll(`{${i}}`, model.get`${str}`)
-        val = val.replaceAll(`{@${i}}`, str)
+    if(this.view?.model && this.dataArgs) {
+      this.dataArgs.forEach(obj => {
+        let args = obj.args.map( str =>  this.get`${str}` )
+        obj.fn(this, ...args)
       })
-      this.el.innerText = val
     }
     return this
   }
@@ -311,13 +310,13 @@ class ViewObject {
     return res
   }
   alias(token, val){
-    if(this.dataArgs) 
-      this.aliasObj[token] = val
+    this.aliasObj[token] = val
     Object.values(this.children).forEach(child => child.alias(token, val))
   }
   get(...getStr){
     if(!this.view || !this.view.model) return undefined
     let str = this.aliasString( i0.str(...getStr) )
+    console.log('get', str, this.aliasObj)
     let res = this.view.model.get`${str}`
     console.log('res', res)
     return res
