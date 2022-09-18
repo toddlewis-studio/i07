@@ -1,13 +1,15 @@
 import i0 from './i0/i0.js'
 
+import homeView from './ui/_home.js'
 import todoView from './ui/_todo.js'
 import bs from './ui/bs.js'
 
 const ui = 
   { ...bs
   , _route: {
-    '': todoView,
-    '#': todoView,
+    '': homeView,
+    '#': homeView,
+    '#home': homeView,
     '#todo': todoView
   }
 }

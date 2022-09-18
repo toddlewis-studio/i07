@@ -21,4 +21,22 @@ ui.btn = (...msg) =>
     .style`btn btn-primary`
     .on`click::${i0.str(...msg)}`
 
+ui.inputWithBtn = (placeholder, bind, text, msg) =>
+  i0.vo`div`
+    .style`input-group mb-3`
+    .child
+      ( i0.vo`input`
+          .style`form-control`
+          .attr`placeholder=${placeholder}`
+          .bind`${bind}`
+      , i0.vo`div`
+          .style`input-group-append`
+          .child
+            ( i0.vo`button`
+                .style`btn btn-primary rounded-0`
+                .text`${text}`
+                .on`click::${msg}`
+            )
+      )
+
 export default ui

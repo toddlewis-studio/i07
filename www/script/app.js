@@ -5,11 +5,13 @@ let view, app = i0.vo`div`.attr`id=app`
 document.body.appendChild(app.el)
 const onRoute = () => {
   view = ui._route[location.hash]
-  if( view ) view = view()
-  document.body.removeChild( app.el )
-  app = i0.vo`div`.attr`id=app`
-  view.appendTo( app.el )
-  document.body.appendChild( app.el )
+  if( view ) {
+    view = view()
+    document.body.removeChild( app.el )
+    app = i0.vo`div`.attr`id=app`
+    view.appendTo( app.el )
+    document.body.appendChild( app.el )
+  }
 }
 addEventListener('hashchange', () => onRoute())
 onRoute()

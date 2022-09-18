@@ -217,7 +217,7 @@ class ViewObject {
     let args = str.split('::')
     this.el.addEventListener(args.shift(), e => {
       if( this.view )
-        this.view.broadcast(args.shift(), e, ...args)
+        this.view.broadcast(args.shift(), this, e, ...args.map(a => this.get`${a}`))
       else console.warn( 'i0 warning: event called but view not found.' )
     })
     return this
@@ -233,6 +233,17 @@ class ViewObject {
       this.type = new ViewObjectTypeData( this.dataArgs )
       return this
     }
+  }
+  bind (...bindPath) {
+    let args = [i0.str(...bindPath)]
+    if(!this.dataArgs) this.dataArgs = []
+    this.dataArgs.push({ args, fn: (vo, val) => vo.el.value = val })
+    this.type = new ViewObjectTypeData( this.dataArgs )
+    this.el.addEventListener('change', e => {
+      console.log('change', args[0], this.el.value)
+      this.set`${args[0]}`(this.el.value)
+    })
+    return this
   }
   edit (fn) {
     fn(this)
@@ -280,7 +291,7 @@ class ViewObject {
           else {
             this.cloneList[i] = this.cloneVO.clone()
             this.cloneList[i].alias(this.listArgs[1], `${this.listArgs[0]}.${i}`)
-            if(this.listArgs[2]) this.cloneList[i].alias(this.listArgs[2], `${i}`)
+            if(this.listArgs[2]) this.cloneList[i].alias(this.listArgs[2], `${i}`, i)
             edited = true
           }
         })
@@ -296,7 +307,7 @@ class ViewObject {
         }
       }
     }
-    if(this.view?.model && this.dataArgs) {
+    else if(this.view?.model && this.dataArgs) {
       this.dataArgs.forEach(obj => {
         let args = obj.args.map( str =>  this.get`${str}` )
         obj.fn(this, ...args)
@@ -306,20 +317,21 @@ class ViewObject {
   }
   aliasString(str){
     let res = str + ''
-    Object.keys(this.aliasObj).forEach(token => res = res.replaceAll(token, this.aliasObj[token]))
+    Object.keys(this.aliasObj).forEach(token => {
+      if(this.aliasObj[token].literal === undefined) res = res.replaceAll(token, this.aliasObj[token].val)
+    })
     return res
   }
-  alias(token, val){
-    this.aliasObj[token] = val
-    Object.values(this.children).forEach(child => child.alias(token, val))
+  alias(token, val, literal){
+    this.aliasObj[token] = {val, literal}
+    Object.values(this.children).forEach(child => child.alias(token, val, literal))
   }
   get(...getStr){
     if(!this.view || !this.view.model) return undefined
     let str = this.aliasString( i0.str(...getStr) )
-    console.log('get', str, this.aliasObj)
-    let res = this.view.model.get`${str}`
-    console.log('res', res)
-    return res
+    let res = Object.keys(this.aliasObj).find(token => str.indexOf(token) !== -1)
+    if(res === undefined) return this.view.model.get`${str}`
+    else return this.aliasObj[res].literal
   }
   set(...setStr){
     if(!this.view || !this.view.model) return undefined
