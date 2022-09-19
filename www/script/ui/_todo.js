@@ -1,6 +1,7 @@
 import i0 from '../i0/i0.js'
 
 import bs from './bs.js'
+import nav from './nav.js'
 
 export default () => {
   const ui = {
@@ -48,13 +49,10 @@ export default () => {
             )
           , ui.card
               ( i0.vo`div`
-                  .list`todos::@todo::@index`
                   .style`d-flex`
                   .child
                     ( i0.vo`div`
                         .data`@todo`((vo, todo) => {
-                          console.log(vo.aliasObj)
-                          console.log(todo)
                           vo.el.innerText = todo.text
                         })
                     , i0.vo`button`
@@ -63,15 +61,16 @@ export default () => {
                         .on`click::deleteTodo`
                     )
               )
+              .list`todos::@todo::@index`
           )
     ]
 
   const update =
     { createTodo: model => {
         const todos = model.get`todos`
-        todos.push({text: model.todoText})
-        model.set`todos`(todos)
+        todos.push({text: model.get`todoText`})
         model.set`todoText`('')
+        model.set`todos`(todos)
       }
     , deleteTodo: (model, vo) => {
         const index = vo.get`@index`

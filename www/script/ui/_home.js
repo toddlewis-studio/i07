@@ -1,6 +1,7 @@
 import i0 from '../i0/i0.js'
 
 import bs from './bs.js'
+import nav from './nav.js'
 
 export default () => {
   const ui = {
@@ -32,44 +33,29 @@ export default () => {
                       )
               ) 
         )
-
-  ui.nav = () => 
-    i0.vo`nav`
-      .style`d-flex align-items-center justify-content-between`
-      .child
-        ( i0.vo`a`
-            .style`text-decoration-none text-dark`
-            .attr`href=./`
-            .child ( i0.vo`h1`.text`i07` )
-        , i0.vo`div`
-            .child
-              ( i0.vo`a`
-                  .list`nav::@link`
-                  .style`btn btn-link`
-                  .data`@link`((vo, link) => {
-                    vo.el.href = link.hash 
-                    vo.el.innerText = link.text
-                  })
-              )
-        )
         
   const model = 
     { nav: [ {text: 'Install', hash: '#install'}
            , {text: 'Learn', hash: '#learn'}
            , {text: 'Playground', hash: '#playground'}
            ]
+    , counter: 0
     }
 
   const view =
     [ ui.card
         ( ui.nav()
         , ui.header()
+        , ui.btn`inc`
+            .data`counter`((vo, counter) => {
+              vo.el.innerText = `Counter: ${counter}`
+            })
         )
         .style`rounded-0`
     ]
 
   const update =
-    {
+    { inc: m => m.set`counter`(m.get`counter` + 1)
     }
 
   return i0.view(model, view, update)

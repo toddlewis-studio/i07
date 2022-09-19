@@ -3,9 +3,11 @@ import i0 from './i0/i0.js'
 import homeView from './ui/_home.js'
 import todoView from './ui/_todo.js'
 import bs from './ui/bs.js'
+import nav from './ui/nav.js'
 
 const ui = 
   { ...bs
+  , ...nav
   , _route: {
     '': homeView,
     '#': homeView,

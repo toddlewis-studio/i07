@@ -35,7 +35,7 @@ class Model {
       eval(`this.ref${loc}[vo.id] = vo`)
     }
     else if(vo?.dataArgs) {
-      console.log('register', vo.dataArgs)
+      console.log('register', vo, vo.dataArgs)
       vo.dataArgs.forEach(obj => obj.args.forEach(str => {
         if(str.substring(0,1) === '@') return null
         const pathAr = str.split('.')
@@ -144,7 +144,7 @@ class View {
     console.log('view inited')
   }
   length () { return Object.keys( this.children ).length }
-  broadcast (msg, ...args) { return this.update[msg]( this.model, ...args ) }
+  broadcast (msg, ...args) { console.log(msg) ; return this.update[msg]( this.model, ...args ) }
   appendTo (el) { this.view.forEach(vo => el.appendChild(vo.el)) }
   get(...getStr){
     if(!this.model) return undefined
@@ -215,9 +215,11 @@ class ViewObject {
     this.events.push(eventString)
     let str = i0.str(...eventString)
     let args = str.split('::')
-    this.el.addEventListener(args.shift(), e => {
+    let event = args.shift()
+    let msg = args.shift()
+    this.el.addEventListener(event, e => {
       if( this.view )
-        this.view.broadcast(args.shift(), this, e, ...args.map(a => this.get`${a}`))
+        this.view.broadcast(msg, this, e, ...args.map(a => this.get`${a}`))
       else console.warn( 'i0 warning: event called but view not found.' )
     })
     return this
@@ -274,6 +276,16 @@ class ViewObject {
       if(this.view?.model && this.el.nodeName !== '#comment'){
         const comment = document.createComment('i0')
         const clone = this.clone()
+        const rmAr = vo => {
+          Object.values(vo.children).forEach(vo => {
+            rmAr(vo)
+            vo.destroy()
+          })
+          vo.children = {}
+        }
+        rmAr(this)
+        
+        console.log('CLONE', clone)
         if(this.el.parentNode){
           this.el.parentNode.insertBefore(comment, this.el)
           this.el.parentNode.removeChild(this.el)
@@ -349,7 +361,10 @@ class ViewObject {
       this.view.model.unregister(this)
       this.view = undefined
     }
-    if(this.parent) this.parent = undefined
+    if(this.parent) {
+      delete this.parent.children[this.id]
+      this.parent = undefined
+    }
     if(this.el.parentNode) this.el.parentNode.removeChild(this.el)
   }
   setView (view) {
@@ -372,6 +387,11 @@ class ViewObject {
     const args = list.split('::')
     this.listArgs = args
     return this
+  }
+  destroy () {
+    Object.values(this.children).forEach(vo => vo.destroy())
+    this.rm()
+    Object.keys(this).forEach(key => delete this[key])
   }
 }
 
