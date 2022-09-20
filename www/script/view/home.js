@@ -38,7 +38,7 @@ export default () => {
             .style`p-3`
         )
         .style`rounded-0 bg-success text-white`
-    , i0.vo`p`.data`hello-world`((vo, obj) => {
+    , i0.vo`p`.style`text-light`.data`hello-world`((vo, obj) => {
         vo.el.innerText = obj.text
       })
     ], 
