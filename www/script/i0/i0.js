@@ -151,9 +151,9 @@ class View {
     return this.view.model.get`${str}`
   }
   set(...setStr){
-    if(!this.view || !this.view.model) return undefined
+    if(!this.view || !this.model) return undefined
     let str = i0.str(...setStr)
-    return this.view.model.set`${str}`
+    return this.model.set`${str}`
   }
   destroy(){
     this.view.forEach(vo => vo.instruct(function () {
@@ -443,14 +443,30 @@ i0.route = (el, routes) => {
   fn()
 }
 
-i0.get = (...httpPath) => fetch(i0.str(...httpPath))
-i0.post = (...httpPath) => data => fetch(i0.str(...httpPath), {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify(data)
-})
+const JSON_to_URLEncoded = (element,key,list) => {
+  list = list || []
+  if(typeof element == 'object')
+      for (let idx in element)
+      JSON_to_URLEncoded(element[idx],key?key+'['+idx+']':idx,list)
+  else 
+      list.push(key+'='+encodeURIComponent(element))
+  return list.join('&')
+}
 
-// i0.get`./api/todo`
-// i0.post`./api/new-todo`(todo)
+const post = body => { return {
+  method: "POST",
+  body: JSON_to_URLEncoded(body || {}), 
+  cache: 'no-cache',
+  headers: {
+      'Access-Control-Allow-Origin':'*',
+      'Content-Type': 'application/x-www-form-urlencoded'
+  }
+} }
+
+const onFetch = (path, body) => fetch( path, post(body) ).then(res => res.json())
+
+i0.http = (...httpPath) => body => onFetch(i0.str(...httpPath), body)
+
+// i0.http`./api/new-todo`(todo)
 
 export default i0

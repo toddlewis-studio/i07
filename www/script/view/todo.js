@@ -1,15 +1,10 @@
 import i0 from '../i0/i0.js'
-
-import bs from '../ui/bs.js'
-import nav from '../ui/nav.js'
+import todoUI from '../ui/todo/_ui.js'
 
 export default () => {
-  const ui = 
-    { ...bs
-    , ...nav
-    }
+  const ui = { ...todoUI }
         
-  const model = 
+  const view = i0.view(
     { nav: [ {text: 'Install', hash: '#install'}
            , {text: 'Learn', hash: '#learn'}
            , {text: 'Playground', hash: '#playground'}
@@ -17,26 +12,9 @@ export default () => {
            ]
     , todoText: ''
     , todos: []
-    }
-
-  const todoList = (...arName) =>
-    i0.vo`div`
-    .style`bg-light rounded p-1 m-1 d-flex justify-content-between align-items-center`
-    .list`${i0.str(...arName)}::@todo::@index`
-    .child
-      ( i0.vo`div`
-          .data`@todo`((vo, todo) => {
-            vo.el.innerText = todo.text
-          })
-      , i0.vo`button`
-          .style`btn btn-danger`
-          .text`X`
-          .on`click::deleteTodo`
-      )
-
-  const view =
+    },
     [ ui.card( ui.nav() )
-        .style`rounded-0`
+      .style`rounded-0`
     , i0.vo`div`
         .style`container mt-3`
         .child
@@ -44,11 +22,9 @@ export default () => {
               'Remember todo...', 'todoText',
               '+', 'createTodo' 
             )
-          , todoList`todos`
+          , ui.todoList`todos`
           )
-    ]
-
-  const update =
+    ],
     { createTodo: model => {
         const text = model.get`todoText`
         if(text){
@@ -65,6 +41,7 @@ export default () => {
         model.set`todos`(ar)
       }
     }
+  )
 
-  return i0.view(model, view, update)
+  return view
 }
