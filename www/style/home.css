@@ -1,0 +1,9 @@
+.home-title{
+  font-size: 7rem;
+}
+
+.home-underline{
+  padding-bottom: 0.25rem;
+  margin-bottom: 0.25rem;
+  border-bottom: 7px solid rebeccapurple;
+}

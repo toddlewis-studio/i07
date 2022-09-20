@@ -35,12 +35,14 @@ class Model {
       eval(`this.ref${loc}[vo.id] = vo`)
     }
     else if(vo?.dataArgs) {
-      console.log('register', vo, vo.dataArgs)
       vo.dataArgs.forEach(obj => obj.args.forEach(str => {
-        if(str.substring(0,1) === '@') return null
+        if(str.substring(0,1) === '@') {
+          if(vo.aliasObj[str] && vo.aliasObj[str].literal === undefined)
+            str = vo.aliasObj[str].val
+          else return null
+        }
         const pathAr = str.split('.')
         let loc = ''
-        console.log('register', str, this.ref)
         pathAr.forEach(path => {
           loc += `['${path}']`
           eval(`if(!this.ref${loc}) this.ref${loc} = {}`)
@@ -55,7 +57,6 @@ class Model {
       let path = ''
       pathAr.forEach(p => path += `[${p}]`)
       eval(`delete this.ref${path}`)
-      console.log('unregister', `this.ref${path}`)
       while(pathAr.length){
         pathAr.pop()
         path = ''
@@ -67,6 +68,7 @@ class Model {
             pathAr = []
         `)
       }
+      console.log('unregister', `this.ref${path}`, this.ref)
     }
     else if(vo?.dataArgs)
       vo.dataArgs.forEach(obj => obj.args.forEach(str => {
@@ -86,6 +88,7 @@ class Model {
               pathAr = []
           `)
         }
+        console.log('unregister', `this.ref${path}`, this.ref)
       }))
   }
   update (path) {
@@ -141,7 +144,6 @@ class View {
       vo.setView( this )
     }
     this.view.forEach( vo => u(vo) )
-    console.log('view inited')
   }
   length () { return Object.keys( this.children ).length }
   broadcast (msg, ...args) { console.log(msg) ; return this.update[msg]( this.model, ...args ) }
@@ -183,6 +185,10 @@ class ViewObjectTypeData extends ViewObjectType {
   apply(vo){
     super.apply(vo, ViewObjectTypeData)
     vo.dataArgs = this.value
+    vo.dataArgs.forEach(obj => {
+      obj.args = [...obj.args]
+      obj.fn = obj.fn.bind(vo)
+    })
   }
 }
 
@@ -241,10 +247,7 @@ class ViewObject {
     if(!this.dataArgs) this.dataArgs = []
     this.dataArgs.push({ args, fn: (vo, val) => vo.el.value = val })
     this.type = new ViewObjectTypeData( this.dataArgs )
-    this.el.addEventListener('change', e => {
-      console.log('change', args[0], this.el.value)
-      this.set`${args[0]}`(this.el.value)
-    })
+    this.el.addEventListener('change', e => this.set`${args[0]}`(this.el.value))
     return this
   }
   edit (fn) {
@@ -285,7 +288,6 @@ class ViewObject {
         }
         rmAr(this)
         
-        console.log('CLONE', clone)
         if(this.el.parentNode){
           this.el.parentNode.insertBefore(comment, this.el)
           this.el.parentNode.removeChild(this.el)
@@ -307,9 +309,11 @@ class ViewObject {
             edited = true
           }
         })
+        if(ar.length < this.cloneList.length){
+            this.cloneList.splice(ar.length).forEach(vo => vo.destroy())
+            this.cloneList.forEach(vo => vo.update())
+        }
         if(edited){
-          // TODO: Handle removing elements
-          console.log('cloneList', this.cloneList)
           this.cloneList.forEach((c, i) => {
             if(!c.el.parentNode){
               this.parent.add(c)
@@ -322,7 +326,7 @@ class ViewObject {
     else if(this.view?.model && this.dataArgs) {
       this.dataArgs.forEach(obj => {
         let args = obj.args.map( str =>  this.get`${str}` )
-        obj.fn(this, ...args)
+        if(args.indexOf(undefined) === -1) obj.fn(this, ...args)
       })
     }
     return this

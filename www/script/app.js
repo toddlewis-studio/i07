@@ -1,10 +1,19 @@
 import i0 from './i0/i0.js'
-import ui from './ui.js'
+
+import homeView from './view/home.js'
+import todoView from './view/todo.js'
+
+const route = {
+  '': homeView,
+  '#': homeView,
+  '#home': homeView,
+  '#todo': todoView
+}
 
 let view, app = i0.vo`div`.attr`id=app`
 document.body.appendChild(app.el)
 const onRoute = () => {
-  view = ui._route[location.hash]
+  view = route[location.hash]
   if( view ) {
     view = view()
     document.body.removeChild( app.el )

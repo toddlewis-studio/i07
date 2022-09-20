@@ -2,6 +2,10 @@ import i0 from '../i0/i0.js'
 
 const ui = {}
 
+ui.div = (...vo) =>
+  i0.vo`div`
+    .child( ...vo )
+
 ui.container = (...vo) =>
   i0.vo`div`
     .style`container`

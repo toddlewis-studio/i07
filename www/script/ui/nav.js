@@ -4,21 +4,24 @@ const ui = {}
 
 ui.nav = () => 
   i0.vo`nav`
-    .style`d-flex align-items-center justify-content-between`
+    .style`d-md-flex align-items-center justify-content-between`
     .child
       ( i0.vo`a`
-          .style`text-decoration-none text-dark`
-          .attr`href=./`
-          .child ( i0.vo`h1`.text`i07` )
+          .style`text-decoration-none text-dark tls fs-1 text-center d-block`
+          .attr`href=#`
+          .text`i07`
       , i0.vo`div`
+          .style`d-flex justify-content-center flex-wrap`
           .child
             ( i0.vo`a`
                 .list`nav::@link::@index`
-                .style`btn btn-link`
+                .style`btn btn-link text-dark`
                 .data`@link::@index`((vo, link, index) => {
                   vo.el.href = link.hash 
                   vo.el.innerText = link.text
                 })
+                // data`this.el.href = @link.hash`
+                // data`this.el.innerText = @link.text`
             )
       )
 

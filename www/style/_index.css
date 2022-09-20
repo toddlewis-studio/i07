@@ -1,7 +1,14 @@
 @import url('https://fonts.googleapis.com/css2?family=Signika:wght@501&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Courier+Prime:wght@700&display=swap');
+
+@import url('./home.css');
 
 *{
   font-family: 'Signika', sans-serif;
+}
+
+.tls{
+  font-family: 'Courier Prime', monospace;
 }
 
 html, body{
