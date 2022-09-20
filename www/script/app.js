@@ -3,27 +3,14 @@ import i0 from './i0/i0.js'
 import homeView from './view/home.js'
 import todoView from './view/todo.js'
 
-const route = {
+const app = document.createElement('i0-app')
+i0.route( app, {
   '': homeView,
   '#': homeView,
   '#home': homeView,
   '#todo': todoView
-}
-
-let view, app = i0.vo`div`.attr`id=app`
-document.body.appendChild(app.el)
-const onRoute = () => {
-  view = route[location.hash]
-  if( view ) {
-    view = view()
-    document.body.removeChild( app.el )
-    app = i0.vo`div`.attr`id=app`
-    view.appendTo( app.el )
-    document.body.appendChild( app.el )
-  }
-}
-addEventListener('hashchange', () => onRoute())
-onRoute()
+})
+document.body.appendChild(app)
 
 // const getUser = async (uid) => {
 //   const user = await i0.post`./api/user`({uid})

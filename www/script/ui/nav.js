@@ -15,13 +15,11 @@ ui.nav = () =>
           .child
             ( i0.vo`a`
                 .list`nav::@link::@index`
-                .style`btn btn-link text-dark`
+                .style`btn btn-link text-dark px-4`
                 .data`@link::@index`((vo, link, index) => {
                   vo.el.href = link.hash 
                   vo.el.innerText = link.text
                 })
-                // data`this.el.href = @link.hash`
-                // data`this.el.innerText = @link.text`
             )
       )
 

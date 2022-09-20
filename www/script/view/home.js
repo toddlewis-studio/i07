@@ -23,7 +23,7 @@ export default () => {
       .style`py-5 pt-4 container`
       .child
         ( i0.vo`div`
-            .style`d-lg-flex py-5 align-items-center`
+            .style`d-lg-flex pt-3 pb-5 align-items-center`
             .child
               ( i0.vo`div`
                   .style`col-lg-8 text-center`

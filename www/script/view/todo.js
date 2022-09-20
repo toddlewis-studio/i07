@@ -63,7 +63,6 @@ export default () => {
         const ar = model.get`todos`
         ar.splice(index, 1)
         model.set`todos`(ar)
-        console.log(ar)
       }
     }
 

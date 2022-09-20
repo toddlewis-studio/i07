@@ -21,7 +21,6 @@ i0.str = (...params) => {
 class Model {
   constructor (data) {
     this.data = Object.assign({}, data)
-    console.log('model', this.data)
     this.ref = {}
   }
   register (vo) {
@@ -68,7 +67,6 @@ class Model {
             pathAr = []
         `)
       }
-      console.log('unregister', `this.ref${path}`, this.ref)
     }
     else if(vo?.dataArgs)
       vo.dataArgs.forEach(obj => obj.args.forEach(str => {
@@ -88,7 +86,6 @@ class Model {
               pathAr = []
           `)
         }
-        console.log('unregister', `this.ref${path}`, this.ref)
       }))
   }
   update (path) {
@@ -146,7 +143,7 @@ class View {
     this.view.forEach( vo => u(vo) )
   }
   length () { return Object.keys( this.children ).length }
-  broadcast (msg, ...args) { console.log(msg) ; return this.update[msg]( this.model, ...args ) }
+  broadcast (msg, ...args) { return this.update[msg]( this.model, ...args ) }
   appendTo (el) { this.view.forEach(vo => el.appendChild(vo.el)) }
   get(...getStr){
     if(!this.model) return undefined
@@ -157,6 +154,13 @@ class View {
     if(!this.view || !this.view.model) return undefined
     let str = i0.str(...setStr)
     return this.view.model.set`${str}`
+  }
+  destroy(){
+    this.view.forEach(vo => vo.instruct(function () {
+      this.view = undefined
+      this.destroy()
+    }))
+    Object.keys(this).forEach(key => delete this[key])
   }
 }
 
@@ -397,6 +401,10 @@ class ViewObject {
     this.rm()
     Object.keys(this).forEach(key => delete this[key])
   }
+  instruct (fn) {
+    Object.values(this.children).forEach(vo => vo.instruct(fn))
+    fn.call(this)
+  }
 }
 
 // exports :: view, vo, type
@@ -421,5 +429,28 @@ i0.type =
   , ViewObjectTypeHtml
   , ViewObjectTypeData
   }
+
+i0.route = (el, routes) => {
+  let cachedView
+  const fn = () => {
+    if(routes[location.hash]){
+      if(cachedView) cachedView.destroy()
+      cachedView = routes[location.hash]()
+      cachedView.appendTo(el)
+    }
+  }
+  addEventListener('hashchange', fn)
+  fn()
+}
+
+i0.get = (...httpPath) => fetch(i0.str(...httpPath))
+i0.post = (...httpPath) => data => fetch(i0.str(...httpPath), {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify(data)
+})
+
+// i0.get`./api/todo`
+// i0.post`./api/new-todo`(todo)
 
 export default i0
