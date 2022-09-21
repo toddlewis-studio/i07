@@ -1,8 +1,10 @@
 import bs from '../bs.js'
 import nav from '../nav.js'
-import todoList from './todoList.js'
+import todoView from './todo/view.js'
+import web3View from './web3/view.js'
 export default
   { ...bs
   , ...nav
-  , ...todoList
+  , todoView
+  , web3View
   }
