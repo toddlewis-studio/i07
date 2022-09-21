@@ -1,4 +1,4 @@
-import i0 from '../../i0/i0.js'
+import i0 from '../../lib/i0.js'
 import bs from '../bs.js'
 
 const ui = 

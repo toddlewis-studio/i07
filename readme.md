@@ -1,5 +1,20 @@
 # i07
 
+### What to check out first
+
+Start by looking at `www/script/app.js`
+
+Then check out the home page
+* `www/script/view/home.js`
+
+Perhaps some 'components'
+* `www/script/ui/bs.js` (This file has bootstrap shortcuts)
+* `www/script/nav.js` (The navbar of the website)
+
+
+
+### Description
+
 The purpose of i07 was to implement the elm MVU pattern into i0.
 
 With the MVU (Model, View, Update) pattern, data is managed by the model and automatically updates the view when the data is changed. The user can then send messages via the update that may change the model, thus changing the view.

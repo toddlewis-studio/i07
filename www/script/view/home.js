@@ -1,4 +1,4 @@
-import i0 from '../i0/i0.js'
+import i0 from '../lib/i0.js'
 import homeUI from '../ui/home/_ui.js'
 
 export default () => {
@@ -38,9 +38,11 @@ export default () => {
             .style`p-3`
         )
         .style`rounded-0 bg-success text-white`
-    , i0.vo`p`.style`text-light`.data`hello-world`((vo, obj) => {
-        vo.el.innerText = obj.text
-      })
+    , i0.vo`p`
+        .style`text-light`
+        .data`hello-world`((vo, obj) => {
+          vo.el.innerText = obj.text
+        })
     ], 
     
     // Update

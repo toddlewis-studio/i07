@@ -1,5 +1,5 @@
-import i0 from '../i0/i0.js'
-import todoUI from '../ui/todo/_ui.js'
+import i0 from '../lib/i0.js'
+import todoUI from '../ui/learn/_ui.js'
 
 export default () => {
   const ui = { ...todoUI }

@@ -1,13 +1,13 @@
-import i0 from './i0/i0.js'
+import i0 from './lib/i0.js'
 
 import homeView from './view/home.js'
-import todoView from './view/todo.js'
+import learnView from './view/learn.js'
 
 const app = document.createElement('i0-app')
 i0.route( app, {
   '': homeView,
   '#': homeView,
   '#home': homeView,
-  '#todo': todoView
+  '#learn': learnView
 })
 document.body.appendChild(app)

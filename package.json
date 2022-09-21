@@ -5,7 +5,15 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node index.js"
+    "dev": "node index.js",
+    "clean-dist": "rm -r dist",
+    "build-www": "esbuild www/script/app.js --bundle --minify --outfile=dist/script/app.js",
+    "build-server": "esbuild index.js --bundle --minify --platform=node --outfile=dist/index.js",
+    "move-html": "cp www/index.html dist/index.html",
+    "make-css": "mkdir dist/style",
+    "move-css": "cp www/style/* dist/style",
+    "build": "npm run clean-dist && npm run build-www && npm run build-server && npm run move-html && npm run make-css && npm run move-css",
+    "start": "npm run build && node dist/index.js"
   },
   "keywords": [],
   "author": "",
@@ -13,6 +21,7 @@
   "dependencies": {
     "body-parser": "^1.19.0",
     "cors": "^2.8.5",
+    "esbuild": "^0.15.8",
     "express": "^4.17.1"
   }
 }

@@ -1,4 +1,4 @@
-import i0 from '../i0/i0.js'
+import i0 from '../lib/i0.js'
 
 const ui = {}
 
@@ -14,9 +14,9 @@ ui.nav = () =>
           .style`d-flex justify-content-center flex-wrap`
           .child
             ( i0.vo`a`
-                .list`nav::@link::@index`
+                .list`nav::@link`
                 .style`btn btn-link text-dark px-4`
-                .data`@link::@index`((vo, link, index) => {
+                .data`@link`((vo, link) => {
                   vo.el.href = link.hash 
                   vo.el.innerText = link.text
                 })
