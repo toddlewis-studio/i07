@@ -1,29 +1,21 @@
-import i0 from '../lib/i0.js'
+import i0 from './i0.js'
 
 const ui = {}
+
+// bootstrap util
 
 ui.div = (...vo) =>
   i0.vo`div`
     .child( ...vo )
 
-ui.container = (...vo) =>
-  ui.div(...vo)
-    .style`container`
-
-ui.card = (...vo) =>
-  ui.div
-    ( ui.div 
-        (...vo)
-        .style`card-body`
-    )
-    .style`card bg-dark text-light`
-
 ui.btn = (...args) => {
   const argsAr = i0.str(...args).split('::')
+      // args
       , msg = argsAr[0]    
       , color = argsAr[1]
       , text = argsAr[2]
-      , vo = i0.vo`button`.attr`type=button`
+      // 
+      , vo = i0.vo`button`
   if(msg) vo.on`click::${msg}`
   if(color) vo.style`btn btn-${color}`
   if(text) vo.text`${text}`
@@ -32,8 +24,10 @@ ui.btn = (...args) => {
 
 ui.input = (...args) => {
   const argsAr = i0.str(...args).split('::')
+      // args
       , bind = argsAr[0]
       , placeholder = argsAr[1]
+      // 
       , vo = i0.vo`input`.style`form-control`
   if(bind) vo.bind`${bind}`
   if(placeholder) vo.attr`placeholder=${placeholder}`

@@ -11,10 +11,10 @@ export default () => {
            , {text: 'API', hash: '#api'}
            ]
     , views: 
-        [ {fn: ui.todoView, name: 'Todo', code: ['todo/view.js', 'todo/todoList.js']} 
-        , {fn: ui.web3View, name: 'Web 3'}
+        [ {fn: ui.todoView, name: 'Todo', code: ['todo/view.js', 'todo/bs.js', 'todo/todoList.js']} 
+        , {fn: ui.web3View, name: 'Web 3', code: ['web3/view.js', 'web3/bs.js', 'web3/w3.js']}
         ]
-    , code : ['todo/view.js', 'todo/todoList.js']
+    , code : ['todo/view.js', 'todo/bs.js', 'todo/todoList.js']
     , view: ui.todoView()
     , codeView: false
     , file: undefined
@@ -23,10 +23,10 @@ export default () => {
         ( ui.nav()
         , ui.div
             ( ui.div
-                ( ui.btn`toProjectView::primary::Project`
+                ( ui.btn`toProjectView::success::Run`
                     .data`codeView`((vo, codeView) => {
-                      vo.el.classList[codeView ? 'add' : 'remove']('btn-outline-primary')
-                      vo.el.classList[codeView ? 'remove' : 'add']('btn-primary')
+                      vo.el.classList[codeView ? 'add' : 'remove']('btn-outline-success')
+                      vo.el.classList[codeView ? 'remove' : 'add']('btn-success')
                     })
                 , ui.btn`toCodeView::outline-primary::Code`
                     .data`codeView`((vo, codeView) => {
@@ -34,7 +34,7 @@ export default () => {
                       vo.el.classList[codeView ? 'add' : 'remove']('btn-primary')
                     })
                 )
-                .style`btn-group px-1`
+                .style`btn-group mx-1 bg-light`
             , i0.vo`select`
                 .style`form-control`
                 .on`change::selectChanged`
@@ -59,27 +59,27 @@ export default () => {
         })
     , ui.div
         ( ui.card
-            ( i0.vo`h1`
+            ( i0.vo`h4`
                 .text`Files`
                 .style`text-muted`
             , ui.div
                 ( i0.vo`button`
-                    .style`btn btn-light col p-1 m-1`
+                    .style`btn btn-link col p-0 px-1 m-1 text-start text-light`
                     .on`click::openFile`
                     .data`@fileName::file`((vo, fileName, file) => {
                       console.log('file', fileName, file)
                       vo.el.innerText = fileName
-                      vo.el.classList[fileName === file ? 'add' : 'remove']('btn-primary')
-                      vo.el.classList[fileName === file ? 'remove' : 'add']('btn-light')
+                      vo.el.classList[fileName === file ? 'add' : 'remove']('bg-light', 'bg-opacity-25')
+                      vo.el.classList[fileName === file ? 'remove' : 'add']('text-decoration-none')
                     })
                 )
                 .style`d-flex`
                 .list`code::@fileName`
             )
             .style`col-md-4 col-lg-3 bg-dark rounded-0`
-        , ui.card
+        , ui.div
             ( i0.vo`pre`
-                .style`learn-code`
+                .style`learn-code lang-js`
                 .child
                     ( i0.vo`code`
                         .style`lang-js`

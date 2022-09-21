@@ -1,5 +1,5 @@
-import i0 from '../../../lib/i0.js'
-import w3 from '../../../lib/w3.js'
+import i0 from './i0.js'
+import w3 from './w3.js'
 import _ui from './_ui.js'
 
 export default () => {

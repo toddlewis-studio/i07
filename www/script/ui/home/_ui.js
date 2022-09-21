@@ -1,10 +1,10 @@
 import bs from '../bs.js'
 import nav from '../nav.js'
 import header from './header.js'
-import titleP from './titleP.js'
+import whyi0 from './whyi0.js'
 export default
   { ...bs
   , ...nav
   , ...header
-  , ...titleP
+  , ...whyi0
   }

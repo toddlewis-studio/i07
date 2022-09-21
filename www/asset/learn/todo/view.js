@@ -1,8 +1,12 @@
 import i0 from './i0.js'
-import todoUI from './todoList.js'
+import bs from './bs.js'
+import todoList from './todoList.js'
 
 export default () => {
-  const ui = { ...todoUI }
+  const ui = 
+    { ...bs 
+    , ...todoList 
+    }
         
   const view = i0.view(
     { todoText: ''
@@ -18,7 +22,8 @@ export default () => {
           , ui.todoList`todos`
           )
     ],
-    { createTodo: model => {
+    { createTodo: (model, vo, e) => {
+        e.preventDefault()
         const text = model.get`todoText`
         if(text){
           const todos = model.get`todos`

@@ -14,10 +14,7 @@ export default () => {
           ( i0.vo`h1`
               .style`text-light text-center`
               .text`Todos`
-          , ui.inputWithBtn( 
-              'Remember todo...', 'todoText',
-              '+', 'createTodo' 
-            )
+          , ui.inputWithBtn`todoText::createTodo::Remember todo...::+`
           , ui.todoList`todos`
           )
     ],

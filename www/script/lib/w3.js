@@ -16,7 +16,7 @@ const Connect = async () => {
   console.log(provider)
 
   try {
-    const res = await provider.connect({ onlyIfTrusted: true })
+    const res = await provider.connect({})
     console.log(res.publicKey.toString())
     console.log(provider.isConnected);
 
