@@ -1,0 +1,16 @@
+.learn-code{
+  height: 40rem;
+}
+
+@media screen and (max-height: 1079px) {
+  .learn-code{
+    height: 20rem;
+    font-size: 0.6rem !important;
+  }
+}
+
+@media screen and (max-width: 500px) {
+  .learn-code{
+    font-size: 0.4rem !important;
+  }
+}

@@ -4,10 +4,10 @@ const ui = {}
 
 ui.nav = () => 
   i0.vo`nav`
-    .style`d-md-flex align-items-center justify-content-between`
+    .style`d-md-flex align-items-center justify-content-between mb-3`
     .child
       ( i0.vo`a`
-          .style`text-decoration-none text-dark tls fs-1 text-center d-block`
+          .style`text-decoration-none text-light tls fs-1 text-center d-block`
           .attr`href=#`
           .text`i07`
       , i0.vo`div`
@@ -15,7 +15,7 @@ ui.nav = () =>
           .child
             ( i0.vo`a`
                 .list`nav::@link`
-                .style`btn btn-link text-dark px-4`
+                .style`btn btn-link text-light px-4`
                 .data`@link`((vo, link) => {
                   vo.el.href = link.hash 
                   vo.el.innerText = link.text

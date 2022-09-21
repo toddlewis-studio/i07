@@ -1,4 +1,4 @@
-import i0 from 'i0.js'
+import i0 from './i0.js'
 import todoUI from './todoList.js'
 
 export default () => {
@@ -14,10 +14,7 @@ export default () => {
           ( i0.vo`h1`
               .style`text-light text-center`
               .text`Todos`
-          , ui.inputWithBtn( 
-              'todoText', 'createTodo',
-              'Remember todo...', '+'
-            )
+          , ui.inputWithBtn`todoText::createTodo::Remember todo...::+`
           , ui.todoList`todos`
           )
     ],

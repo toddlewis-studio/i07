@@ -21,23 +21,28 @@ export default () => {
       , ui.header()
       )
       .style`rounded-0`
-    , ui.card
-        ( ui.container
-            ( ui.div
-                ( i0.vo`h2`
-                    .style`home-underline d-inline-block`
-                    .text`Why i0?`
+    , i0.vo`div`
+        .style`card rounded-0 bg-success text-white`
+        .child
+          ( i0.vo`div`
+              .style`card-body`
+              .child
+                ( ui.container
+                    ( ui.div
+                        ( i0.vo`h2`
+                            .style`home-underline d-inline-block`
+                            .text`Why i0?`
+                        )
+                    , ui.div
+                        ( ui.titleP('MVU', 'Quickly create apps with the MVU pattern')
+                        , ui.titleP('ES6', 'Use the latest javascript features to their fullest potential')
+                        , ui.titleP('Swaggy', 'Have more swag than the average front-end developer by using i07')
+                        )
+                      .style`d-lg-flex pb-5`
+                    )
+                    .style`p-3`
                 )
-            , ui.div
-                ( ui.titleP('MVU', 'Quickly create apps with the MVU pattern')
-                , ui.titleP('ES6', 'Use the latest javascript features to their fullest potential')
-                , ui.titleP('Swaggy', 'Have more swag than the average front-end developer by using i07')
-                )
-              .style`d-lg-flex pb-5`
-            )
-            .style`p-3`
-        )
-        .style`rounded-0 bg-success text-white`
+          )
     , i0.vo`p`
         .style`text-light`
         .data`hello-world`((vo, obj) => {

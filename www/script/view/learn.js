@@ -21,11 +21,21 @@ export default () => {
     },
     [ ui.card
         ( ui.nav()
-        , i0.vo`p`
-            .style`text-muted text-center web3-fade`
-            .text`Select a project to view`
         , ui.div
-            ( i0.vo`select`
+            ( ui.div
+                ( ui.btn`toProjectView::primary::Project`
+                    .data`codeView`((vo, codeView) => {
+                      vo.el.classList[codeView ? 'add' : 'remove']('btn-outline-primary')
+                      vo.el.classList[codeView ? 'remove' : 'add']('btn-primary')
+                    })
+                , ui.btn`toCodeView::outline-primary::Code`
+                    .data`codeView`((vo, codeView) => {
+                      vo.el.classList[codeView ? 'remove' : 'add']('btn-outline-primary')
+                      vo.el.classList[codeView ? 'add' : 'remove']('btn-primary')
+                    })
+                )
+                .style`btn-group px-1`
+            , i0.vo`select`
                 .style`form-control`
                 .on`change::selectChanged`
                 .child
@@ -35,19 +45,6 @@ export default () => {
                         vo.el.innerText = view.name
                       })
                   )
-            , ui.div
-                ( ui.btn`toCodeView::light::Code`
-                    .data`codeView`((vo, codeView) => {
-                      vo.el.classList[codeView ? 'remove' : 'add']('btn-light')
-                      vo.el.classList[codeView ? 'add' : 'remove']('btn-primary')
-                    })
-                , ui.btn`toProjectView::primary::Project`
-                    .data`codeView`((vo, codeView) => {
-                      vo.el.classList[codeView ? 'add' : 'remove']('btn-light')
-                      vo.el.classList[codeView ? 'remove' : 'add']('btn-primary')
-                    })
-                )
-                .style`btn-group px-1`
             )
             .style`d-flex`
         )
@@ -82,9 +79,10 @@ export default () => {
             .style`col-md-4 col-lg-3 bg-dark rounded-0`
         , ui.card
             ( i0.vo`pre`
+                .style`learn-code`
                 .child
                     ( i0.vo`code`
-                        .style`language-js`
+                        .style`lang-js`
                         .data`file`(async (vo, file) => {
                           const res = await fetch(`./asset/learn/${file}`)
                           const text = await res.text()
@@ -94,9 +92,9 @@ export default () => {
             )
             .style`col-md-8 col-lg-9 rounded-0 bg-dark`
         )
-        .style`d-flex`
+        .style`d-md-flex`
         .data`codeView`((vo, codeView) => {
-          vo.el.classList[codeView === true ? 'remove' : 'add']('d-none')
+          vo.el.classList[codeView === true ? 'remove' : 'add']('d-none', 'd-md-none')
         })
     ],
     { selectChanged: (model, vo) => {

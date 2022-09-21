@@ -21,7 +21,8 @@ export default () => {
           , ui.todoList`todos`
           )
     ],
-    { createTodo: model => {
+    { createTodo: (model, vo, e) => {
+        e.preventDefault()
         const text = model.get`todoText`
         if(text){
           const todos = model.get`todos`

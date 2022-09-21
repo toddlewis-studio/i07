@@ -9,7 +9,7 @@ Then check out the home page
 
 Perhaps some 'components'
 * `www/script/ui/bs.js` (This file has bootstrap shortcuts)
-* `www/script/nav.js` (The navbar of the website)
+* `www/script/ui/nav.js` (The navbar of the website)
 
 
 

@@ -1,9 +1,12 @@
-import i0 from '../../../lib/i0.js';
-import bs from '../../bs.js';
+import i0 from './i0.js'
 
-const ui = {...bs}
+const ui = {}
 
 // bootstrap util
+
+ui.div = (...vo) =>
+  i0.vo`div`
+    .child( ...vo )
 
 ui.btn = (...args) => {
   const argsAr = i0.str(...args).split('::')
@@ -31,14 +34,23 @@ ui.input = (...args) => {
   return vo
 }
 
-ui.inputWithBtn = (bind, msg, placeholder, text) =>
-  ui.div
-    ( ui.input`${bind}::${placeholder}`
-    , ui.div
-        ( ui.btn`${msg}::primary rounded-0::${text}` )
-        .style`input-group-append`
-    )
-    .style`input-group mb-3`
+ui.inputWithBtn = (...args) => {
+  const argsAr = i0.str(...args).split('::')
+      // args
+      , bind = argsAr[0]
+      , msg = argsAr[1]
+      , placeholder = argsAr[2]
+      , text = argsAr[3]
+      // 
+  , vo = ui.div
+      ( ui.input`${bind}::${placeholder}`
+      , ui.div
+          ( ui.btn`${msg}::primary::${text}` )
+          .style`input-group-append`
+      )
+      .style`input-group mb-3`
+  return vo
+}
 
 // todolist
 

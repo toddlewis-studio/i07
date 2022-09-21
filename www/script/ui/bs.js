@@ -16,14 +16,14 @@ ui.card = (...vo) =>
         (...vo)
         .style`card-body`
     )
-    .style`card`
+    .style`card bg-dark text-light`
 
 ui.btn = (...args) => {
   const argsAr = i0.str(...args).split('::')
       , msg = argsAr[0]    
       , color = argsAr[1]
       , text = argsAr[2]
-      , vo = i0.vo`button`
+      , vo = i0.vo`button`.attr`type=button`
   if(msg) vo.on`click::${msg}`
   if(color) vo.style`btn btn-${color}`
   if(text) vo.text`${text}`
@@ -41,12 +41,14 @@ ui.input = (...args) => {
 }
 
 ui.inputWithBtn = (placeholder, bind, text, msg) =>
-  ui.div
-    ( ui.input`${bind}::${placeholder}`
-    , ui.div
-        ( ui.btn`${msg}::primary rounded-0::${text}` )
-        .style`input-group-append`
-    )
+  i0.vo`form`
     .style`input-group mb-3`
-  
+    .on`submit::${msg}`
+    .child
+      ( ui.input`${bind}::${placeholder}`
+          .attr`aria-describedby=basic-addon2`
+          .attr`aria-label=${placeholder}`
+      , ui.btn`${msg}::primary::${text}`
+      )
+
 export default ui
