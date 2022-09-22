@@ -6,7 +6,8 @@ export default () => {
   const ui = { ..._ui }
         
   const view = i0.view(
-    { cryptoName
+    { cryptoName: ''
+    , tkview: 'wallet'
     },
     [ ui.div
         ( i0.vo`h1`
@@ -23,15 +24,35 @@ export default () => {
             ( i0.vo`h4`.text`Wallet`
             , ui.btn`newWallet::success m-1::Create Wallet`
             , ui.btn`loadWallet::primary m-1::Load Wallet`
-            , i0.vo`h4`.text`Crypto`
+            , ui.div
+                ( i0.vo`h4`
+                    .text`Crypto`
+                , ui.div
+                    ( ui.div
+                      ( ui.btn`tkviewWallet::outline-primary::Wallet`
+                          .data`tkview`((vo, tkview) => {
+                            vo.el.classList[tkview === 'wallet' ? 'remove' : 'add']('btn-outline-primary')
+                            vo.el.classList[tkview === 'wallet' ? 'add' : 'remove']('btn-primary')
+                          })
+                      , ui.btn`tkviewCreate::outline-success::Create`
+                          .data`tkview`((vo, tkview) => {
+                            vo.el.classList[tkview === 'create' ? 'remove' : 'add']('btn-outline-success')
+                            vo.el.classList[tkview === 'create' ? 'add' : 'remove']('btn-success')
+                          })
+                      )
+                      .style`btn-group`
+                    )
+                    .style`ms-4`
+                )
+                .style`d-flex align-items-center`
             , i0.vo`form`
+                .style`input-group`
+                .data`tkview`((vo, tkview) => {
+                  vo.el.classList[tkview === 'create' ? 'remove' : 'add']('d-none')
+                })
                 .child
                   ( ui.input`cryptoName::Token Name`
-                  , ui.btn`createToken::success m-1::Create Token`
-                  )
-            , i0.vo`form`
-                .child
-                  ( 
+                  , ui.btn`createToken::success::Create Token`
                   )
             )
         )
@@ -39,6 +60,11 @@ export default () => {
     ],
     { connectWallet: () => w3.Get.Connect()
     , messageWallet: () => w3.Msg.Send('This is a test message.')
+    , tkviewWallet: m => m.set`tkview`('wallet')
+    , tkviewCreate: m => m.set`tkview`('create')
+    , createToken: () => {
+        
+      }
     }
   )
 
