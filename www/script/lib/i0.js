@@ -246,6 +246,27 @@ class ViewObject {
       return this
     }
   }
+  when (...whenPath) {
+    let str = i0.str(...whenPath)
+    let args = str.split('::')
+    if(!this.dataArgs) this.dataArgs = []
+    return fn => {
+      const condition = (...props) => {
+        if(this.hide && fn(...props)){
+          this.hide.parentNode.insertBefore(this.el, this.hide)
+          this.hide.parentNode.removeChild(this.hide)
+          delete this.hide
+        } else if(this.el.parentNode && !this.hide){
+          this.hide = document.createComment('i0')
+          this.el.parentNode.insertBefore(this.hide, this.el)
+          this.el.parentNode.removeChild(this.el)
+        }
+      }
+      this.dataArgs.push({args, fn: condition})
+      this.type = new ViewObjectTypeData( this.dataArgs )
+      return this
+    }
+  }
   bind (...bindPath) {
     let args = [i0.str(...bindPath)]
     if(!this.dataArgs) this.dataArgs = []
