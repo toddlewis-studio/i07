@@ -16,92 +16,7 @@ i0.str = (...params) => {
   return str
 }
 
-class Alias {
-  constructor (token, val, literal) {
-    this.token = token
-    this.val = val
-    this.literal = literal
-  }
-}
-
-class DataArg {
-  constructor (fn, ...args) {
-    this.fn = fn
-    this.args = args
-  }
-  update(vo){
-    let args = this.args.map( str =>  vo.get`${str}` )
-    if(args.indexOf(undefined) === -1) this.fn(vo, ...args)
-  }
-  register(vo, ref){
-    this.args.forEach(str => {
-      if(str.substring(0,1) === '@') {
-        if(vo.aliasObj[str] && vo.aliasObj[str].literal === undefined)
-          str = vo.aliasObj[str].val
-        else return null
-      }
-      const pathAr = str.split('.')
-      let loc = ''
-      pathAr.forEach(path => {
-        loc += `['${path}']`
-        eval(`if(!ref${loc}) ref${loc} = {}`)
-      })
-      eval(`ref${loc}[vo.id] = vo`)
-    })
-  }
-  unregister(vo, ref){
-    this.args.forEach(str => {
-      if(str.substring(0,1) === '@') {
-        if(vo.aliasObj[str] && vo.aliasObj[str].literal === undefined)
-          str = vo.aliasObj[str].val
-        else return null
-      }
-      const pathAr = str.split('.')
-      let path = ''
-      pathAr.forEach(p => path += `[${p}]`)
-      eval(`delete ref${path}; ref${path} = undefined`)
-      while(pathAr.length){
-        pathAr.pop()
-        path = ''
-        pathAr.forEach(p => path += `[${p}]`)
-        eval(`
-          if(Object.keys(this.ref${path}).length === 0) { delete this.ref${path} ; ref${path} }
-          else pathAr = []
-        `)
-      }
-    })
-  }
-}
-
-class ListArg {
-  constructor (...args) {
-    this.args = args
-  }
-  register(vo, ref){
-    const pathAr = this.args[0].split('.')
-    let loc = ''
-    pathAr.forEach(path => {
-      loc += `['${path}']`
-      eval(`if(!ref${loc}) ref${loc} = {}`)
-    })
-    eval(`ref${loc}[vo.id] = vo`)
-  }
-  unregister(vo, ref){
-    const pathAr = this.args[0].split('.')
-    let path = ''
-    pathAr.forEach(p => path += `[${p}]`)
-    eval(` delete ref${path}; ref${path} = undefined `)
-    while(pathAr.length){
-      pathAr.pop()
-      path = ''
-      pathAr.forEach(p => path += `[${p}]`)
-      eval(`
-        if(Object.keys(ref${path}).length === 0) { delete ref${path}; ref${path} = undefined }
-        else pathAr = []
-      `)
-    }
-  }
-}
+// main
 
 class Model {
   constructor (data) {
@@ -109,12 +24,69 @@ class Model {
     this.ref = {}
   }
   register (vo) {
-    if(vo?.listArgs) vo.listArgs.register(vo, this.ref)
-    else if(vo?.dataArgs) vo.dataArgs.forEach(obj => obj.register(vo, this.ref))
+    if(vo?.listArgs){
+      const pathAr = vo.listArgs[0].split('.')
+      let loc = ''
+      pathAr.forEach(path => {
+        loc += `['${path}']`
+        eval(`if(!this.ref${loc}) this.ref${loc} = {}`)
+      })
+      eval(`this.ref${loc}[vo.id] = vo`)
+    }
+    else if(vo?.dataArgs) {
+      vo.dataArgs.forEach(obj => obj.args.forEach(str => {
+        if(str.substring(0,1) === '@') {
+          if(vo.aliasObj[str] && vo.aliasObj[str].literal === undefined)
+            str = vo.aliasObj[str].val
+          else return null
+        }
+        const pathAr = str.split('.')
+        let loc = ''
+        pathAr.forEach(path => {
+          loc += `['${path}']`
+          eval(`if(!this.ref${loc}) this.ref${loc} = {}`)
+        })
+        eval(`this.ref${loc}[vo.id] = vo`)
+      }))
+    }
   }
   unregister (vo) {  
-    if(vo?.listArgs) vo.listArgs.unregister(vo, this.ref)
-    else if(vo?.dataArgs) vo.dataArgs.forEach(obj => obj.unregister(vo, this.ref))
+    if(vo?.listArgs){
+      const pathAr = vo.listArgs[0].split('.')
+      let path = ''
+      pathAr.forEach(p => path += `[${p}]`)
+      eval(`delete this.ref${path}`)
+      while(pathAr.length){
+        pathAr.pop()
+        path = ''
+        pathAr.forEach(p => path += `[${p}]`)
+        eval(`
+          if(Object.keys(this.ref${path}).length === 0)
+            delete this.ref${path}
+          else
+            pathAr = []
+        `)
+      }
+    }
+    else if(vo?.dataArgs)
+      vo.dataArgs.forEach(obj => obj.args.forEach(str => {
+        if(str.substring(0,1) === '@') return null
+        const pathAr = str.split('.')
+        let path = ''
+        pathAr.forEach(p => path += `[${p}]`)
+        eval(`delete this.ref${path}`)
+        while(pathAr.length){
+          pathAr.pop()
+          path = ''
+          pathAr.forEach(p => path += `[${p}]`)
+          eval(`
+            if(Object.keys(this.ref${path}).length === 0)
+              delete this.ref${path}
+            else
+              pathAr = []
+          `)
+        }
+      }))
   }
   update (path) {
     const pathAr = path.split('.')
@@ -269,7 +241,7 @@ class ViewObject {
     let args = str.split('::')
     if(!this.dataArgs) this.dataArgs = []
     return fn => {
-      this.dataArgs.push(new DataArg(fn, ...args))
+      this.dataArgs.push({args, fn})
       this.type = new ViewObjectTypeData( this.dataArgs )
       return this
     }
@@ -290,7 +262,7 @@ class ViewObject {
           this.el.parentNode.removeChild(this.el)
         }
       }
-      this.dataArgs.push(new DataArg(condition,...args))
+      this.dataArgs.push({args, fn: condition})
       this.type = new ViewObjectTypeData( this.dataArgs )
       return this
     }
@@ -298,7 +270,7 @@ class ViewObject {
   bind (...bindPath) {
     let args = [i0.str(...bindPath)]
     if(!this.dataArgs) this.dataArgs = []
-    this.dataArgs.push(new DataArg((vo, val) => vo.el.value = val, ...args))
+    this.dataArgs.push({ args, fn: (vo, val) => vo.el.value = val })
     this.type = new ViewObjectTypeData( this.dataArgs )
     this.el.addEventListener('change', e => this.set`${args[0]}`(this.el.value))
     return this
@@ -348,17 +320,17 @@ class ViewObject {
           this.cloneVO = clone
           this.cloneList = []
         }
-        this.ref[this.listArgs.args[0]] = true
+        this.ref[this.listArgs[0]] = true
       }
       if(this.el.nodeName === '#comment'){
-        const ar = this.view.model.get`${this.listArgs.args[0]}`
+        const ar = this.view.model.get`${this.listArgs[0]}`
         let edited = false
         ar.forEach((item, i) => {
           if(this.cloneList[i]) this.cloneList[i].update()
           else {
             this.cloneList[i] = this.cloneVO.clone()
-            this.cloneList[i].alias(this.listArgs.args[1], `${this.listArgs.args[0]}.${i}`)
-            if(this.listArgs.args[2]) this.cloneList[i].alias(this.listArgs.args[2], `${i}`, i)
+            this.cloneList[i].alias(this.listArgs[1], `${this.listArgs[0]}.${i}`)
+            if(this.listArgs[2]) this.cloneList[i].alias(this.listArgs[2], `${i}`, i)
             edited = true
           }
         })
@@ -376,8 +348,12 @@ class ViewObject {
         }
       }
     }
-    else if(this.view?.model && this.dataArgs) 
-      this.dataArgs.forEach(obj => obj.update(this))
+    else if(this.view?.model && this.dataArgs) {
+      this.dataArgs.forEach(obj => {
+        let args = obj.args.map( str =>  this.get`${str}` )
+        if(args.indexOf(undefined) === -1) obj.fn(this, ...args)
+      })
+    }
     return this
   }
   aliasString(str){
@@ -388,7 +364,7 @@ class ViewObject {
     return res
   }
   alias(token, val, literal){
-    this.aliasObj[token] = new Alias(token, val, literal)
+    this.aliasObj[token] = {val, literal}
     Object.values(this.children).forEach(child => child.alias(token, val, literal))
   }
   get(...getStr){
@@ -438,7 +414,7 @@ class ViewObject {
   list (...listString) {
     const list = i0.str(...listString)
     const args = list.split('::')
-    this.listArgs = new ListArg(...args)
+    this.listArgs = args
     return this
   }
   destroy () {
@@ -473,9 +449,6 @@ i0.type =
   , ViewObjectTypeText
   , ViewObjectTypeHtml
   , ViewObjectTypeData
-  , Alias
-  , DataArg
-  , ListArg
   }
 
 i0.route = (el, routes) => {

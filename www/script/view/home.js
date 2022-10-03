@@ -14,6 +14,7 @@ export default () => {
            ]
     , version: '0.0.1'
     , showText: false
+    , testAr: [[0,1,2], [0,1,2], [0,1,2]]
     }, 
     
     // View
@@ -37,6 +38,15 @@ export default () => {
           vo.el.innerText = `Show Text: ${b}`
         })
         .when`showText`(b=>b)
+    , i0.vo`div`
+        .list`testAr::@obj`
+        .child
+          ( i0.vo`div`
+              .list`@obj::@child`
+              .data`@child`((vo, child) => {
+                vo.el.innerText = child
+              })
+          )
     ], 
     // Update
     { toggleShow: m => m.set`showText`( !m.get`showText` )
