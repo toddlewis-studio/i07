@@ -22,6 +22,15 @@ class Alias {
     this.val = val
     this.literal = literal
   }
+  static match(vo, str){
+    if(str && str.substring(0,1) === '@') {
+      console.log('alias', str)
+      if(vo.aliasObj[str] && vo.aliasObj[str].literal === undefined)
+        str = vo.aliasObj[str].val
+      else return str
+    }
+    return str
+  }
 }
 
 class DataArg {
@@ -35,11 +44,7 @@ class DataArg {
   }
   register(vo, ref){
     this.args.forEach(str => {
-      if(str.substring(0,1) === '@') {
-        if(vo.aliasObj[str] && vo.aliasObj[str].literal === undefined)
-          str = vo.aliasObj[str].val
-        else return null
-      }
+      str = Alias.match(vo, str)
       const pathAr = str.split('.')
       let loc = ''
       pathAr.forEach(path => {
@@ -51,11 +56,7 @@ class DataArg {
   }
   unregister(vo, ref){
     this.args.forEach(str => {
-      if(str.substring(0,1) === '@') {
-        if(vo.aliasObj[str] && vo.aliasObj[str].literal === undefined)
-          str = vo.aliasObj[str].val
-        else return null
-      }
+      str = Alias.match(vo, str)
       const pathAr = str.split('.')
       let path = ''
       pathAr.forEach(p => path += `[${p}]`)
@@ -78,7 +79,8 @@ class ListArg {
     this.args = args
   }
   register(vo, ref){
-    const pathAr = this.args[0].split('.')
+    let str = Alias.match(vo, this.args[0] + '')
+    const pathAr = str.split('.')
     let loc = ''
     pathAr.forEach(path => {
       loc += `['${path}']`
@@ -87,7 +89,8 @@ class ListArg {
     eval(`ref${loc}[vo.id] = vo`)
   }
   unregister(vo, ref){
-    const pathAr = this.args[0].split('.')
+    let str = Alias.match(vo, this.args[0] + '')
+    const pathAr = str.split('.')
     let path = ''
     pathAr.forEach(p => path += `[${p}]`)
     eval(` delete ref${path}; ref${path} = undefined `)
@@ -348,16 +351,16 @@ class ViewObject {
           this.cloneVO = clone
           this.cloneList = []
         }
-        this.ref[this.listArgs.args[0]] = true
+        this.ref[Alias.match(this, this.listArgs.args[0] + '')] = true
       }
       if(this.el.nodeName === '#comment'){
-        const ar = this.view.model.get`${this.listArgs.args[0]}`
+        const ar = this.view.model.get`${Alias.match(this, this.listArgs.args[0] + '')}`
         let edited = false
         ar.forEach((item, i) => {
           if(this.cloneList[i]) this.cloneList[i].update()
           else {
             this.cloneList[i] = this.cloneVO.clone()
-            this.cloneList[i].alias(this.listArgs.args[1], `${this.listArgs.args[0]}.${i}`)
+            this.cloneList[i].alias(this.listArgs.args[1], `${Alias.match(this, this.listArgs.args[0] + '')}.${i}`)
             if(this.listArgs.args[2]) this.cloneList[i].alias(this.listArgs.args[2], `${i}`, i)
             edited = true
           }
@@ -438,6 +441,7 @@ class ViewObject {
   list (...listString) {
     const list = i0.str(...listString)
     const args = list.split('::')
+    console.log('list--> 1', args[0])
     this.listArgs = new ListArg(...args)
     return this
   }
