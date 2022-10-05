@@ -195,34 +195,77 @@ class View {
   }
 }
 
-class ViewObjectType {
-  constructor( value ) { this.value = value } 
-  apply( vo, type ) { vo.type = new type(this.value) }
+class VOExtension {
+  constructor( value, isArray ) { this.value = value ; this.isArray = isArray || false }
+  apply( vo, ext ) {
+    if(this.isArray) {
+      if(!vo.extensions[ext.constructor.name]) vo.extensions[ext.constructor.name] = []
+      vo.extensions[ext.constructor.name].push(ext)
+    }
+    else vo.extensions[ext.constructor.name] = ext
+  }
 }
-class ViewObjectTypeText extends ViewObjectType {
-  constructor(text){ super(text + '') } 
-  apply(vo){
-    super.apply(vo, ViewObjectTypeText)
+
+class TextVOE extends VOExtension{
+  constructor( text ) { super( text + '', false ) }
+  apply(vo) {
+    super.apply(vo, TextVOE)
     vo.el.innerText = this.value
   }
 }
-class ViewObjectTypeHtml extends ViewObjectType {
-  constructor(html){super(html + '')} 
-  apply(vo){
-    super.apply(vo, ViewObjectTypeHtml)
+
+class HtmlVOE extends VOExtension{
+  constructor( text ) { super( text + '', false ) }
+  apply(vo) {
+    super.apply(vo, HtmlVOE)
     vo.el.innerHTML = this.value
   }
 }
-class ViewObjectTypeData extends ViewObjectType {
+
+class DataVOE extends VOExtension {
   constructor(dataArgs){
-    super( [...dataArgs] ) 
+    super( [...dataArgs], true ) 
   } 
   apply(vo){
-    super.apply(vo, ViewObjectTypeData)
+    super.apply(vo, DataVOE)
     vo.dataArgs = this.value
     vo.dataArgs.forEach(obj => {
       obj.args = [...obj.args]
       obj.fn = obj.fn.bind(vo)
+    })
+  }
+}
+
+class StyleVOE extends VOExtension {
+  constuctor(classAr) {
+    super( classAr, true )
+  }
+  apply(vo){
+    super.apply(vo, StyleVOE)
+    vo.el.classList.add(...this.value)
+  }
+}
+
+class AttrVOE extends VOExtension {
+  constructor(name, val){
+    super([name, val], true)
+  }
+  apply(vo){
+    super.apply(vo, AttrVOE)
+    vo.el.setAttribute(...this.value)
+  }
+}
+
+class EventVOE extends VOExtension {
+  constructor( event, msg ){
+    super({event, msg}, true)
+  }
+  apply(vo){
+    super.apply(vo, EventVOE)
+    vo.el.addEventListener(this.value.event, e => {
+      if( vo.view )
+        vo.view.broadcast(this.value.msg, vo, e)
+      else console.warn( 'i0 warning: event called but view not found.' )
     })
   }
 }
@@ -235,7 +278,7 @@ class ViewObject {
     this.ref = {}
     this.events = []
     this.aliasObj = {}
-    this.type
+    this.extensions = {}
     this.parent
     this.view
     this.dataArgs
@@ -243,7 +286,8 @@ class ViewObject {
   }
   style (...classList) {
     let str = i0.str(...classList)
-    this.el.classList.add( ...str.split(' ') )
+    const styleVOE = new StyleVOE(str.split(' '))
+    styleVOE.apply(this)
     return this
   }
   attr (...attrString){ 
